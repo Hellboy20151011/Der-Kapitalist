@@ -9,3 +9,14 @@ HBoxContainer (Name: Buttons)
 Button (Name: LoginButton)
 Button (Name: RegisterButton)
 Label (Name: StatusLabel)
+UI-Einstellungen (wichtig)
+Login (Control): Layout → Full Rect
+BG: Layout → Full Rect, Color dunkel (optional)
+Panel: Layout → Center
+TitleLabel.text = Der-Kapitalist
+EmailLineEdit.placeholder_text = E-Mail
+PasswordLineEdit.placeholder_text = Passwort
+PasswordLineEdit.secret = ✅
+LoginButton.text = Login
+RegisterButton.text = Registrieren
+StatusLabel.text = `` (leer)
