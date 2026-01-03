@@ -23,7 +23,8 @@ cp .env.example .env
 
 4. Initialize the database using the schema in `../DB_Schema.md`:
 ```bash
-psql -U your_user -d your_database -f ../DB_Schema.md
+# The DB_Schema.md file contains pure SQL and can be executed directly
+psql -U your_user -d your_database < ../DB_Schema.md
 ```
 
 ## Running the Server
