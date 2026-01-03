@@ -168,6 +168,25 @@ Diese Checkliste hilft dabei, das Projekt sicher in Produktion zu bringen.
     -H "Authorization: Bearer <token>"
   ```
 
+- [ ] **Produktions-System testen**
+  ```bash
+  # Gebäude bauen
+  curl -X POST https://api.dein-domain.de/economy/buildings/build \
+    -H "Authorization: Bearer <token>" \
+    -H "Content-Type: application/json" \
+    -d '{"building_type":"well"}'
+  
+  # Produktion starten
+  curl -X POST https://api.dein-domain.de/economy/production/start \
+    -H "Authorization: Bearer <token>" \
+    -H "Content-Type: application/json" \
+    -d '{"building_type":"well","quantity":5}'
+  
+  # Produktionsstatus abrufen
+  curl https://api.dein-domain.de/economy/production/status \
+    -H "Authorization: Bearer <token>"
+  ```
+
 - [ ] **Marktplatz-Funktionen testen**
   ```bash
   # Listings abrufen
