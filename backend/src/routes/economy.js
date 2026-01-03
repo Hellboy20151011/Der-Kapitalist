@@ -249,7 +249,7 @@ const PRODUCTION_CONFIG = {
 
 const productionStartSchema = z.object({
   building_type: z.enum(['well', 'lumberjack', 'stonemason']),
-  quantity: z.number().int().positive().max(1000)
+  quantity: z.number().int().positive().max(1000) // UI slider shows 1-100, but allow higher for flexibility
 });
 
 economyRouter.post('/production/start', authRequired, async (req, res) => {
@@ -316,7 +316,9 @@ economyRouter.post('/production/start', authRequired, async (req, res) => {
     }
 
     // Create production job
-    const finishesAt = new Date(Date.now() + config.duration_seconds * 1000);
+    // Total time = duration per unit * quantity
+    const totalDuration = config.duration_seconds * quantity * 1000;
+    const finishesAt = new Date(Date.now() + totalDuration);
     const prodRes = await client.query(
       `INSERT INTO production_queue(user_id, building_type, quantity, finishes_at)
        VALUES ($1, $2, $3, $4)

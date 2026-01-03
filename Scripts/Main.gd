@@ -185,6 +185,8 @@ func _poll_production() -> void:
 		return
 	
 	var res := await Net.get_json("/economy/production/status")
-	if res.ok:
-		# Automatically sync state if any production completed
-		await _sync_state()
+	if res.ok and res.data.has("in_progress"):
+		# Only sync state if there are productions (to collect completed ones)
+		var in_progress = res.data.get("in_progress", [])
+		if in_progress.size() > 0:
+			await _sync_state()
