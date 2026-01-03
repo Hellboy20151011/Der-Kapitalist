@@ -176,7 +176,7 @@ var create_result = await Net.post_json("/market/listings", {
 })
 
 # Markt-Listing kaufen
-var buy_result = await Net.post_json("/market/listings/" + listing_id + "/buy", {})
+var buy_result = await Net.post_json("/market/listings/%s/buy" % listing_id, {})
 ```
 
 ## Datenbank-Management

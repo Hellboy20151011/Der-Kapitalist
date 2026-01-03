@@ -58,7 +58,7 @@ The server will start on `http://localhost:3000` by default.
 - `GET /market/listings` - Get active market listings (requires authentication)
   - Query params: `resource_type` (optional: water, wood, stone), `limit` (default: 50, max: 200)
 - `POST /market/listings` - Create a new market listing (requires authentication)
-  - Body: `{ resource_type, quantity, price_per_unit }`
+  - Body: `{ resource_type: string (enum: water, wood, stone), quantity: integer (1-1,000,000), price_per_unit: integer (1-1,000,000,000) }`
 - `POST /market/listings/:id/buy` - Buy a market listing (requires authentication)
 
 ### Health Check
