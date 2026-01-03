@@ -105,6 +105,8 @@ Each building produces resources over time. Production increases with building l
 - Formula: `100 * 1.6^(level-1)` coins
 
 ### Production System
+**MANUAL PRODUCTION ONLY** - Buildings do NOT produce automatically over time.
+
 Players can start production jobs that consume resources and time to produce outputs:
 
 **Well Production:**
@@ -117,13 +119,14 @@ Players can start production jobs that consume resources and time to produce out
 - Duration: 5 seconds per unit
 - Output: 10 wood per unit
 
-**Stonemason Production:**
+**Sandgrube (Sand Mine) Production:**
 - Cost: 1 coin + 1 water per unit
 - Duration: 5 seconds per unit
-- Output: 2 stone per unit
+- Output: 2 sand per unit
 
-### Offline Production
-The game tracks offline time and grants up to 8 hours of catch-up production when players return.
+Players manually select quantity via a slider and click "Produce" to queue a production job. The job runs in the background and completes after (quantity × duration). Once complete, resources are added to inventory.
+
+**NO IDLE/OFFLINE PRODUCTION** - Production only happens when explicitly started by the player.
 
 ### Player Market
 Players can trade resources with each other through market listings:
