@@ -20,7 +20,8 @@ function signToken(userId) {
 }
 
 async function seedNewPlayer(client, userId) {
-  await client.query(`INSERT INTO player_state(user_id, coins, last_tick_at) VALUES ($1, 0, now())`, [userId]);
+  // Start with 100 coins to be able to build buildings and start production
+  await client.query(`INSERT INTO player_state(user_id, coins, last_tick_at) VALUES ($1, 100, now())`, [userId]);
 
   // Start-Inventar
   const resources = ['water', 'wood', 'stone'];

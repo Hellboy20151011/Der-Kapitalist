@@ -80,6 +80,112 @@ text = "0"
 [node name="HSeparator2" type="HSeparator" parent="RootPanel/Margin/VBox"]
 layout_mode = 2
 
+[node name="BuildTitle" type="Label" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+text = "Gebäude bauen"
+
+[node name="BuildButtons" type="HBoxContainer" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BuildWellButton" type="Button" parent="RootPanel/Margin/VBox/BuildButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Brunnen bauen (10c+10w+20s)"
+
+[node name="BuildLumberButton" type="Button" parent="RootPanel/Margin/VBox/BuildButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Holzfäller bauen (10c+10w)"
+
+[node name="BuildStoneButton" type="Button" parent="RootPanel/Margin/VBox/BuildButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Steinmetz bauen (10c+10w)"
+
+[node name="HSeparator5" type="HSeparator" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="ProductionTitle" type="Label" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+text = "Produktion"
+
+[node name="Production" type="VBoxContainer" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="WellProduction" type="HBoxContainer" parent="RootPanel/Margin/VBox/Production"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="RootPanel/Margin/VBox/Production/WellProduction"]
+layout_mode = 2
+text = "Brunnen:"
+
+[node name="WellSlider" type="HSlider" parent="RootPanel/Margin/VBox/Production/WellProduction"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 100.0
+value = 1.0
+
+[node name="WellQtyLabel" type="Label" parent="RootPanel/Margin/VBox/Production/WellProduction"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "1"
+
+[node name="WellProduceButton" type="Button" parent="RootPanel/Margin/VBox/Production/WellProduction"]
+layout_mode = 2
+text = "Wasser produzieren"
+
+[node name="LumberProduction" type="HBoxContainer" parent="RootPanel/Margin/VBox/Production"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="RootPanel/Margin/VBox/Production/LumberProduction"]
+layout_mode = 2
+text = "Holzfäller:"
+
+[node name="LumberSlider" type="HSlider" parent="RootPanel/Margin/VBox/Production/LumberProduction"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 100.0
+value = 1.0
+
+[node name="LumberQtyLabel" type="Label" parent="RootPanel/Margin/VBox/Production/LumberProduction"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "1"
+
+[node name="LumberProduceButton" type="Button" parent="RootPanel/Margin/VBox/Production/LumberProduction"]
+layout_mode = 2
+text = "Holz produzieren"
+
+[node name="StoneProduction" type="HBoxContainer" parent="RootPanel/Margin/VBox/Production"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="RootPanel/Margin/VBox/Production/StoneProduction"]
+layout_mode = 2
+text = "Steinmetz:"
+
+[node name="StoneSlider" type="HSlider" parent="RootPanel/Margin/VBox/Production/StoneProduction"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 100.0
+value = 1.0
+
+[node name="StoneQtyLabel" type="Label" parent="RootPanel/Margin/VBox/Production/StoneProduction"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "1"
+
+[node name="StoneProduceButton" type="Button" parent="RootPanel/Margin/VBox/Production/StoneProduction"]
+layout_mode = 2
+text = "Stein produzieren"
+
+[node name="HSeparator6" type="HSeparator" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+
 [node name="BuildingsTitle" type="Label" parent="RootPanel/Margin/VBox"]
 layout_mode = 2
 text = "Gebäude"

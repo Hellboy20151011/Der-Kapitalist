@@ -41,3 +41,15 @@ CREATE TABLE IF NOT EXISTS market_listings (
 );
 
 CREATE INDEX IF NOT EXISTS idx_market_active ON market_listings(status, resource_type, price_per_unit);
+
+CREATE TABLE IF NOT EXISTS production_queue (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  building_type text NOT NULL,
+  quantity int NOT NULL,
+  started_at timestamptz NOT NULL DEFAULT now(),
+  finishes_at timestamptz NOT NULL,
+  status text NOT NULL DEFAULT 'in_progress'
+);
+
+CREATE INDEX IF NOT EXISTS idx_production_user ON production_queue(user_id, status);
