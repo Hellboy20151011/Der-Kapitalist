@@ -98,4 +98,4 @@ Players can trade resources with each other through market listings:
 - Browse and buy listings from other players
 - 7% marketplace fee applies to all transactions
 - Listings expire after 24 hours
-- Maximum active listings per player: limited to prevent spam
+- Maximum 10 active listings per player to prevent spam
