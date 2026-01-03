@@ -81,15 +81,15 @@ const PRODUCTION_CONFIG = {
     output_amount: 1n 
   },
   
-  // NEUES GEBÄUDE HINZUFÜGEN:
-  mein_neues_gebaeude: {
+  // NEUES GEBÄUDE HINZUFÜGEN (Beispiel: Eisenmine):
+  ironmine: {
     costs: { 
       coins: 2n,      // Kosten pro Produktions-Zyklus
       water: 1n,      // Benötigte Ressourcen
       wood: 3n 
     },
     duration_seconds: 10,        // Zeit pro Produktions-Einheit
-    output_type: 'neues_material', // Was wird produziert
+    output_type: 'iron_ore',     // Was wird produziert
     output_amount: 5n            // Menge pro Zyklus
   }
 };
@@ -104,8 +104,8 @@ const BUILD_COSTS = {
   // Existierende Gebäude...
   well: { coins: 10n, wood: 10n, stone: 20n },
   
-  // NEUES GEBÄUDE:
-  mein_neues_gebaeude: { 
+  // NEUES GEBÄUDE (Beispiel: Eisenmine):
+  ironmine: { 
     coins: 50n, 
     wood: 30n, 
     stone: 20n 
@@ -122,7 +122,7 @@ Füge den neuen Gebäude-Typ zu den Zod-Schemas hinzu:
 const productionStartSchema = z.object({
   building_type: z.enum([
     'well', 'lumberjack', 'sandgrube', 
-    'mein_neues_gebaeude'  // <-- HINZUFÜGEN
+    'ironmine'  // <-- HINZUFÜGEN
   ]),
   quantity: z.number().int().positive().max(1000)
 });
@@ -131,7 +131,7 @@ const productionStartSchema = z.object({
 const buildSchema = z.object({
   building_type: z.enum([
     'well', 'lumberjack', 'sandgrube',
-    'mein_neues_gebaeude'  // <-- HINZUFÜGEN
+    'ironmine'  // <-- HINZUFÜGEN
   ])
 });
 
@@ -139,7 +139,7 @@ const buildSchema = z.object({
 const upgradeSchema = z.object({
   building_type: z.enum([
     'well', 'lumberjack', 'sandgrube',
-    'mein_neues_gebaeude'  // <-- HINZUFÜGEN
+    'ironmine'  // <-- HINZUFÜGEN
   ])
 });
 ```
@@ -153,14 +153,14 @@ const SELL_PRICES = {
   water: 1.2, 
   wood: 1.3, 
   stone: 1.4,
-  neues_material: 2.5  // <-- HINZUFÜGEN
+  iron_ore: 2.5  // <-- HINZUFÜGEN
 };
 
 // Und im sellSchema:
 const sellSchema = z.object({
   resource_type: z.enum([
     'water', 'wood', 'stone',
-    'neues_material'  // <-- HINZUFÜGEN
+    'iron_ore'  // <-- HINZUFÜGEN
   ]),
   quantity: z.number().int().positive().max(1_000_000)
 });
@@ -172,20 +172,20 @@ In **`Scripts/Main.gd`** UI-Elemente hinzufügen:
 
 1. **Neue Referenzen** für Buttons/Slider:
 ```gdscript
-@onready var neues_slider: HSlider = $Path/To/NeuesSlider
-@onready var neues_produce_btn: Button = $Path/To/NeuesProduceButton
-@onready var neues_qty_label: Label = $Path/To/NeuesQtyLabel
+@onready var ironmine_slider: HSlider = $Path/To/IronmineSlider
+@onready var ironmine_produce_btn: Button = $Path/To/IronmineProduceButton
+@onready var ironmine_qty_label: Label = $Path/To/IronmineQtyLabel
 ```
 
 2. **Connections in `_ready()`:**
 ```gdscript
-neues_slider.value_changed.connect(func(val): neues_qty_label.text = str(int(val)))
-neues_produce_btn.pressed.connect(func(): await _produce("mein_neues_gebaeude", int(neues_slider.value)))
+ironmine_slider.value_changed.connect(func(val): ironmine_qty_label.text = str(int(val)))
+ironmine_produce_btn.pressed.connect(func(): await _produce("ironmine", int(ironmine_slider.value)))
 ```
 
 3. **Building-Tracking Variable:**
 ```gdscript
-var has_neues_gebaeude := false
+var has_ironmine := false
 ```
 
 4. **Sync-Funktion aktualisieren:**
@@ -193,8 +193,8 @@ var has_neues_gebaeude := false
 func _sync_state() -> void:
     # ... 
     for b in buildings:
-        if b.type == "mein_neues_gebaeude":
-            has_neues_gebaeude = true
+        if b.type == "ironmine":
+            has_ironmine = true
     # ...
 ```
 
@@ -202,8 +202,8 @@ func _sync_state() -> void:
 ```gdscript
 func _update_building_ui() -> void:
     # ...
-    neues_slider.editable = has_neues_gebaeude
-    neues_produce_btn.disabled = not has_neues_gebaeude
+    ironmine_slider.editable = has_ironmine
+    ironmine_produce_btn.disabled = not has_ironmine
 ```
 
 ### Schritt 6: Szene (`.tscn`) aktualisieren
@@ -270,7 +270,7 @@ WHERE user_id = 'user-uuid-hier';
 
 ```sql
 INSERT INTO buildings(user_id, building_type, level)
-VALUES ('user-uuid-hier', 'well', 1)
+VALUES ('user-uuid-hier', 'ironmine', 1)
 ON CONFLICT (user_id, building_type) DO NOTHING;
 ```
 
