@@ -32,15 +32,15 @@ stateRouter.get('/', authRequired, async (req, res) => {
     await client.query('COMMIT');
 
     const inventory = {};
-    for (const row of invRes.rows) inventory[row.resource_type] = Number(row.amount);
+for (const row of invRes.rows) inventory[row.resource_type] = String(row.amount);
 
-    return res.json({
-      server_time: new Date().toISOString(),
-      coins: Number(stateRes.rows[0].coins),
-      last_tick_at: stateRes.rows[0].last_tick_at,
-      inventory,
-      buildings: bRes.rows.map(r => ({ type: r.building_type, level: Number(r.level) }))
-    });
+return res.json({
+  server_time: new Date().toISOString(),
+  coins: String(stateRes.rows[0].coins),
+  last_tick_at: stateRes.rows[0].last_tick_at,
+  inventory,
+  buildings: bRes.rows.map(r => ({ type: r.building_type, level: Number(r.level) }))
+});
   } catch (e) {
     await client.query('ROLLBACK');
     return res.status(500).json({ error: 'server_error' });
