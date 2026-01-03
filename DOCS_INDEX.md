@@ -127,7 +127,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 - [DB_Schema.md](DB_Schema.md) - Spiel-Datenmodell
 
 ### 💻 API
-- [backend/README.md](backend/README.md) - API-Endpoints
+- [backend/README.md](backend/README.md) - API-Endpoints (Auth, State, Economy, Market)
 - [QUICKSTART.md](QUICKSTART.md) - API-Beispiele
 - Code in `backend/src/routes/`
 

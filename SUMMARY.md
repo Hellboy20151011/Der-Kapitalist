@@ -166,8 +166,10 @@ Der-Kapitalist ist ein gut strukturiertes Idle-/Wirtschaftsspiel-Projekt mit ein
 ✅ routes/auth.js - OK
 ✅ routes/state.js - OK
 ✅ routes/economy.js - OK
+✅ routes/market.js - OK
 ✅ middleware/authRequired.js - OK
 ✅ services/simService.js - OK
+✅ services/marketService.js - OK
 ```
 
 ### Code-Review

@@ -74,6 +74,17 @@ Das Projekt "Der-Kapitalist" ist ein Idle-/Wirtschaftsspiel für Mobile Clients,
 - ✅ Transaktionale Sicherheit
 - ✅ Ressourcen-Verfügbarkeits-Checks
 
+### Marktplatz (market.js)
+- ✅ Player-to-Player Trading implementiert
+- ✅ Listing-Erstellung mit Ressourcen-Reservierung
+- ✅ Kauf-Abwicklung mit atomaren Transaktionen
+- ✅ 7% Marketplace-Gebühr
+- ✅ 24-Stunden-Ablauf-Mechanismus
+- ✅ Limit für aktive Listings (Anti-Spam)
+- ✅ Vollständige FOR UPDATE Locks
+- ✅ Catch-up-Produktion vor Transaktion
+- ✅ Validierung gegen Self-Trading
+
 ### Simulation (simService.js)
 - ✅ Offline-Produktions-Berechnung
 - ✅ 8-Stunden-Cap für faire Mechanik

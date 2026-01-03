@@ -54,6 +54,13 @@ The server will start on `http://localhost:3000` by default.
 - `POST /economy/sell` - Sell resources for coins (requires authentication)
 - `POST /economy/buildings/upgrade` - Upgrade a building (requires authentication)
 
+### Market (Player-to-Player Trading)
+- `GET /market/listings` - Get active market listings (requires authentication)
+  - Query params: `resource_type` (optional: water, wood, stone), `limit` (default: 50, max: 200)
+- `POST /market/listings` - Create a new market listing (requires authentication)
+  - Body: `{ resource_type, quantity, price_per_unit }`
+- `POST /market/listings/:id/buy` - Buy a market listing (requires authentication)
+
 ### Health Check
 - `GET /health` - Server health check
 
@@ -84,3 +91,11 @@ Each building produces resources over time. Production increases with building l
 
 ### Offline Production
 The game tracks offline time and grants up to 8 hours of catch-up production when players return.
+
+### Player Market
+Players can trade resources with each other through market listings:
+- Create listings to sell resources at custom prices
+- Browse and buy listings from other players
+- 7% marketplace fee applies to all transactions
+- Listings expire after 24 hours
+- Maximum active listings per player: limited to prevent spam

@@ -118,6 +118,26 @@ curl -X POST http://localhost:3000/economy/buildings/upgrade \
   -d '{"building_type":"well"}'
 ```
 
+#### Markt-Listings anzeigen
+```bash
+curl http://localhost:3000/market/listings?resource_type=wood&limit=10 \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Markt-Listing erstellen
+```bash
+curl -X POST http://localhost:3000/market/listings \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"resource_type":"wood","quantity":50,"price_per_unit":5}'
+```
+
+#### Markt-Listing kaufen
+```bash
+curl -X POST http://localhost:3000/market/listings/LISTING_ID/buy \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ### Frontend-Entwicklung (Godot)
 
 1. Godot Engine 4+ öffnen
@@ -141,6 +161,22 @@ var result = await Net.post_json("/economy/sell", {
     "resource_type": "wood",
     "quantity": 5
 })
+
+# Markt-Listings abrufen
+var listings = await Net.get_json("/market/listings?resource_type=wood")
+if listings.ok:
+    for listing in listings.data.listings:
+        print("Listing: ", listing.quantity, " wood für ", listing.price_per_unit, " pro Stück")
+
+# Markt-Listing erstellen
+var create_result = await Net.post_json("/market/listings", {
+    "resource_type": "stone",
+    "quantity": 100,
+    "price_per_unit": 10
+})
+
+# Markt-Listing kaufen
+var buy_result = await Net.post_json("/market/listings/" + listing_id + "/buy", {})
 ```
 
 ## Datenbank-Management
