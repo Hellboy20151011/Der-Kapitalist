@@ -110,12 +110,34 @@ curl -X POST http://localhost:3000/economy/sell \
   -d '{"resource_type":"water","quantity":10}'
 ```
 
+#### Gebäude bauen
+```bash
+curl -X POST http://localhost:3000/economy/buildings/build \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"building_type":"well"}'
+```
+
 #### Gebäude upgraden
 ```bash
 curl -X POST http://localhost:3000/economy/buildings/upgrade \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"building_type":"well"}'
+```
+
+#### Produktion starten
+```bash
+curl -X POST http://localhost:3000/economy/production/start \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"building_type":"well","quantity":10}'
+```
+
+#### Produktionsstatus abrufen
+```bash
+curl http://localhost:3000/economy/production/status \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 #### Markt-Listings anzeigen
@@ -161,6 +183,27 @@ var result = await Net.post_json("/economy/sell", {
     "resource_type": "wood",
     "quantity": 5
 })
+
+# Gebäude bauen
+var build_result = await Net.post_json("/economy/buildings/build", {
+    "building_type": "well"
+})
+
+# Gebäude upgraden
+var upgrade_result = await Net.post_json("/economy/buildings/upgrade", {
+    "building_type": "lumberjack"
+})
+
+# Produktion starten
+var production = await Net.post_json("/economy/production/start", {
+    "building_type": "well",
+    "quantity": 10
+})
+
+# Produktionsstatus abrufen
+var status = await Net.get_json("/economy/production/status")
+if status.ok:
+    print("In Progress: ", status.data.in_progress)
 
 # Markt-Listings abrufen
 var listings = await Net.get_json("/market/listings?resource_type=wood")
