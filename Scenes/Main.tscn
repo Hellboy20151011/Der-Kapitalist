@@ -365,7 +365,7 @@ columns = 2
 
 [node name="WaterText" type="Label" parent="LegacyUI/RootPanel/Margin/VBox/InventoryGrid"]
 layout_mode = 2
-text = "Wasser:"
+text = "Wasser (Liter):"
 
 [node name="WaterValue" type="Label" parent="LegacyUI/RootPanel/Margin/VBox/InventoryGrid"]
 layout_mode = 2
@@ -373,7 +373,7 @@ text = "0"
 
 [node name="WoodText" type="Label" parent="LegacyUI/RootPanel/Margin/VBox/InventoryGrid"]
 layout_mode = 2
-text = "Holz:"
+text = "Holz (m³):"
 
 [node name="WoodValue" type="Label" parent="LegacyUI/RootPanel/Margin/VBox/InventoryGrid"]
 layout_mode = 2
@@ -381,7 +381,7 @@ text = "0"
 
 [node name="StoneText" type="Label" parent="LegacyUI/RootPanel/Margin/VBox/InventoryGrid"]
 layout_mode = 2
-text = "Stein:"
+text = "Stein (m³):"
 
 [node name="StoneValue" type="Label" parent="LegacyUI/RootPanel/Margin/VBox/InventoryGrid"]
 layout_mode = 2
