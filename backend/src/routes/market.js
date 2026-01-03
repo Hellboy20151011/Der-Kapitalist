@@ -2,7 +2,6 @@ import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
-import { applyCatchUpProduction } from '../services/simService.js';
 import { MARKET, countActiveListings } from '../services/marketService.js';
 
 export const marketRouter = express.Router();
@@ -60,8 +59,7 @@ marketRouter.post('/listings', authRequired, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Produktion nachholen, bevor Inventar geprüft wird
-    await applyCatchUpProduction(client, userId);
+    // Idle production removed: buildings no longer produce automatically over time
 
     // Limit aktive Listings
     const activeCount = await countActiveListings(client, userId);
@@ -131,8 +129,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Produktion nachholen beim Käufer (optional, aber konsistent)
-    await applyCatchUpProduction(client, userId);
+    // Idle production removed: buildings no longer produce automatically over time
 
     // Listing locken
     const lRes = await client.query(

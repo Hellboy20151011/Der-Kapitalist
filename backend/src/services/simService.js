@@ -38,9 +38,12 @@ function producedResourceForBuilding(buildingType) {
 }
 
 /**
- * Must be called inside a DB transaction.
- * Uses SELECT ... FOR UPDATE to avoid double-production.
+ * IDLE PRODUCTION DISABLED
+ * This function previously provided automatic resource production based on elapsed time.
+ * Now production is manual only - players must start production via the UI slider system.
+ * Keeping this code commented for reference.
  */
+/* 
 export async function applyCatchUpProduction(client, userId) {
   const stateRes = await client.query(
     `SELECT coins, last_tick_at
@@ -116,3 +119,4 @@ export async function applyCatchUpProduction(client, userId) {
     [userId]
   );
 }
+*/

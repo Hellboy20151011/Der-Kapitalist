@@ -26,7 +26,8 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 → [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) - Deployment-Guide
 
 ### ...die Datenbank verstehen 🗄️
-→ [DB_Schema.md](DB_Schema.md) - PostgreSQL-Schema
+→ [DB_Schema.md](DB_Schema.md) - PostgreSQL-Schema  
+→ [DATABASE_AND_BUILDINGS.md](DATABASE_AND_BUILDINGS.md) - Datenbank-Verbindung und wie man neue Gebäude hinzufügt
 
 ---
 
@@ -48,6 +49,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 | [backend/.env.example](backend/.env.example) | Konfigurations-Template | 1 Min | Entwickler |
 | [backend/package.json](backend/package.json) | Dependencies | 1 Min | Entwickler |
 | [DB_Schema.md](DB_Schema.md) | Datenbank-Schema | 3 Min | Backend-Entwickler, DBAs |
+| [DATABASE_AND_BUILDINGS.md](DATABASE_AND_BUILDINGS.md) | DB-Verbindung & Gebäude hinzufügen | 10 Min | Backend-Entwickler |
 
 ### Qualität & Sicherheit
 
@@ -72,8 +74,9 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 2. [QUICKSTART.md](QUICKSTART.md) - Setup durchführen
 3. [backend/README.md](backend/README.md) - Backend-Details lernen
 4. [DB_Schema.md](DB_Schema.md) - Datenmodell verstehen
+5. [DATABASE_AND_BUILDINGS.md](DATABASE_AND_BUILDINGS.md) - DB-Verbindung & Gebäude-System
 
-**Geschätzte Zeit:** 30 Minuten
+**Geschätzte Zeit:** 40 Minuten
 
 ### Für Code-Reviewer
 
@@ -109,6 +112,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 - [README.md](README.md) - Technologie-Stack
 - [backend/README.md](backend/README.md) - Backend-Architektur
 - [DB_Schema.md](DB_Schema.md) - Datenbank-Design
+- [DATABASE_AND_BUILDINGS.md](DATABASE_AND_BUILDINGS.md) - DB-Verbindung & Gebäude-System
 - [REVIEW.md](REVIEW.md) - Architektur-Bewertung
 
 ### 🔒 Sicherheit
