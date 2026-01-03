@@ -52,7 +52,21 @@ The server will start on `http://localhost:3000` by default.
 
 ### Economy
 - `POST /economy/sell` - Sell resources for coins (requires authentication)
+  - Body: `{ resource_type: string (enum: water, wood, stone), quantity: integer (1-1,000,000) }`
+- `POST /economy/buildings/build` - Build a new building (requires authentication)
+  - Body: `{ building_type: string (enum: well, lumberjack, stonemason) }`
 - `POST /economy/buildings/upgrade` - Upgrade a building (requires authentication)
+  - Body: `{ building_type: string (enum: well, lumberjack, stonemason) }`
+- `POST /economy/production/start` - Start a production job (requires authentication)
+  - Body: `{ building_type: string (enum: well, lumberjack, stonemason), quantity: integer (1-1,000) }`
+- `GET /economy/production/status` - Get production queue status (requires authentication)
+
+### Market (Player-to-Player Trading)
+- `GET /market/listings` - Get active market listings (requires authentication)
+  - Query params: `resource_type` (optional: water, wood, stone), `limit` (default: 50, max: 200)
+- `POST /market/listings` - Create a new market listing (requires authentication)
+  - Body: `{ resource_type: string (enum: water, wood, stone), quantity: integer (1-1,000,000), price_per_unit: integer (1-1,000,000,000) }`
+- `POST /market/listings/:id/buy` - Buy a market listing (requires authentication)
 
 ### Health Check
 - `GET /health` - Server health check
@@ -82,5 +96,39 @@ Authorization: Bearer <token>
 ### Buildings
 Each building produces resources over time. Production increases with building level.
 
+**Building Costs (to construct):**
+- Well: 10 coins, 10 wood, 20 stone
+- Lumberjack: 10 coins, 10 wood
+- Stonemason: 10 coins, 10 wood
+
+**Upgrade Costs:**
+- Formula: `100 * 1.6^(level-1)` coins
+
+### Production System
+Players can start production jobs that consume resources and time to produce outputs:
+
+**Well Production:**
+- Cost: 1 coin per unit
+- Duration: 3 seconds per unit
+- Output: 1 water per unit
+
+**Lumberjack Production:**
+- Cost: 1 coin + 1 water per unit
+- Duration: 5 seconds per unit
+- Output: 10 wood per unit
+
+**Stonemason Production:**
+- Cost: 1 coin + 1 water per unit
+- Duration: 5 seconds per unit
+- Output: 2 stone per unit
+
 ### Offline Production
 The game tracks offline time and grants up to 8 hours of catch-up production when players return.
+
+### Player Market
+Players can trade resources with each other through market listings:
+- Create listings to sell resources at custom prices
+- Browse and buy listings from other players
+- 7% marketplace fee applies to all transactions
+- Listings expire after 24 hours
+- Maximum 10 active listings per player to prevent spam

@@ -39,6 +39,25 @@
 - [x] Saubere Code-Struktur
 - [x] Separation of Concerns
 
+#### Marktplatz-Sicherheit
+- [x] Transaktionale Atomarität für Käufe/Verkäufe
+- [x] FOR UPDATE Locks für kritische Operationen
+- [x] Validierung gegen Self-Trading
+- [x] Ressourcen-Reservierung bei Listing-Erstellung
+- [x] Automatische Ablauf-Prüfung
+- [x] Limit für aktive Listings (Anti-Spam)
+- [x] BigInt-Handling für große Zahlen
+- [x] Marketplace-Gebühr zur Wirtschaftskontrolle
+
+#### Produktions-Queue-Sicherheit
+- [x] Transaktionale Ressourcen-Abbuchung
+- [x] Validierung der Gebäude-Existenz vor Produktion
+- [x] Ressourcen-Verfügbarkeits-Prüfung (Coins, Wasser)
+- [x] Automatische Fertigstellung bei Status-Abfrage
+- [x] FOR UPDATE Locks bei Completion-Check
+- [x] Input-Validierung (Quantity max 1000)
+- [x] Zeitbasierte Produktions-Mechanik
+
 ### ⚠️ Empfehlungen für Produktion
 
 #### Kritisch (vor Produktions-Deployment)

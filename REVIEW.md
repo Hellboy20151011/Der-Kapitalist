@@ -70,9 +70,27 @@ Das Projekt "Der-Kapitalist" ist ein Idle-/Wirtschaftsspiel für Mobile Clients,
 
 ### Wirtschaft (economy.js)
 - ✅ Ressourcen-Verkauf mit Preissystem
+- ✅ Gebäude-Bau mit Kosten-System
 - ✅ Gebäude-Upgrade mit Kostenkurve
+- ✅ Produktions-Queue-System implementiert
+  - Well: 1 coin → 1 water (3s)
+  - Lumberjack: 1 coin + 1 water → 10 wood (5s)
+  - Stonemason: 1 coin + 1 water → 2 stone (5s)
+- ✅ Produktionsstatus-Abfrage
+- ✅ Automatische Fertigstellung bei Abfrage
 - ✅ Transaktionale Sicherheit
 - ✅ Ressourcen-Verfügbarkeits-Checks
+
+### Marktplatz (market.js)
+- ✅ Player-to-Player Trading implementiert
+- ✅ Listing-Erstellung mit Ressourcen-Reservierung
+- ✅ Kauf-Abwicklung mit atomaren Transaktionen
+- ✅ 7% Marketplace-Gebühr
+- ✅ 24-Stunden-Ablauf-Mechanismus
+- ✅ Limit für aktive Listings (Anti-Spam)
+- ✅ Vollständige FOR UPDATE Locks
+- ✅ Catch-up-Produktion vor Transaktion
+- ✅ Validierung gegen Self-Trading
 
 ### Simulation (simService.js)
 - ✅ Offline-Produktions-Berechnung

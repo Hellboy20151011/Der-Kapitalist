@@ -110,12 +110,54 @@ curl -X POST http://localhost:3000/economy/sell \
   -d '{"resource_type":"water","quantity":10}'
 ```
 
+#### Gebäude bauen
+```bash
+curl -X POST http://localhost:3000/economy/buildings/build \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"building_type":"well"}'
+```
+
 #### Gebäude upgraden
 ```bash
 curl -X POST http://localhost:3000/economy/buildings/upgrade \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"building_type":"well"}'
+```
+
+#### Produktion starten
+```bash
+curl -X POST http://localhost:3000/economy/production/start \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"building_type":"well","quantity":10}'
+```
+
+#### Produktionsstatus abrufen
+```bash
+curl http://localhost:3000/economy/production/status \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Markt-Listings anzeigen
+```bash
+curl http://localhost:3000/market/listings?resource_type=wood&limit=10 \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Markt-Listing erstellen
+```bash
+curl -X POST http://localhost:3000/market/listings \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"resource_type":"wood","quantity":50,"price_per_unit":5}'
+```
+
+#### Markt-Listing kaufen
+```bash
+curl -X POST http://localhost:3000/market/listings/LISTING_ID/buy \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ### Frontend-Entwicklung (Godot)
@@ -141,6 +183,43 @@ var result = await Net.post_json("/economy/sell", {
     "resource_type": "wood",
     "quantity": 5
 })
+
+# Gebäude bauen
+var build_result = await Net.post_json("/economy/buildings/build", {
+    "building_type": "well"
+})
+
+# Gebäude upgraden
+var upgrade_result = await Net.post_json("/economy/buildings/upgrade", {
+    "building_type": "lumberjack"
+})
+
+# Produktion starten
+var production = await Net.post_json("/economy/production/start", {
+    "building_type": "well",
+    "quantity": 10
+})
+
+# Produktionsstatus abrufen
+var status = await Net.get_json("/economy/production/status")
+if status.ok:
+    print("In Progress: ", status.data.in_progress)
+
+# Markt-Listings abrufen
+var listings = await Net.get_json("/market/listings?resource_type=wood")
+if listings.ok:
+    for listing in listings.data.listings:
+        print("Listing: ", listing.quantity, " wood für ", listing.price_per_unit, " pro Stück")
+
+# Markt-Listing erstellen
+var create_result = await Net.post_json("/market/listings", {
+    "resource_type": "stone",
+    "quantity": 100,
+    "price_per_unit": 10
+})
+
+# Markt-Listing kaufen
+var buy_result = await Net.post_json("/market/listings/%s/buy" % listing_id, {})
 ```
 
 ## Datenbank-Management
