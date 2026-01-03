@@ -14,3 +14,14 @@ export_credentials.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+# Node.js / Backend
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.env.local
+.env.*.local
+dist/
+build/
+*.log
