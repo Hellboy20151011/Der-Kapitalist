@@ -1,0 +1,137 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3vxm4oqy8bko"]
+
+[ext_resource type="Script" path="res://Scripts/Main.gd" id="1_1"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1")
+
+[node name="RootPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="RootPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="RootPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TopBar" type="HBoxContainer" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="CoinsLabel" type="Label" parent="RootPanel/Margin/VBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Coins: 0"
+
+[node name="SyncButton" type="Button" parent="RootPanel/Margin/VBox/TopBar"]
+layout_mode = 2
+text = "Sync"
+
+[node name="LogoutButton" type="Button" parent="RootPanel/Margin/VBox/TopBar"]
+layout_mode = 2
+text = "Logout"
+
+[node name="HSeparator" type="HSeparator" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="InventoryGrid" type="GridContainer" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="WaterText" type="Label" parent="RootPanel/Margin/VBox/InventoryGrid"]
+layout_mode = 2
+text = "Wasser:"
+
+[node name="WaterValue" type="Label" parent="RootPanel/Margin/VBox/InventoryGrid"]
+layout_mode = 2
+text = "0"
+
+[node name="WoodText" type="Label" parent="RootPanel/Margin/VBox/InventoryGrid"]
+layout_mode = 2
+text = "Holz:"
+
+[node name="WoodValue" type="Label" parent="RootPanel/Margin/VBox/InventoryGrid"]
+layout_mode = 2
+text = "0"
+
+[node name="StoneText" type="Label" parent="RootPanel/Margin/VBox/InventoryGrid"]
+layout_mode = 2
+text = "Stein:"
+
+[node name="StoneValue" type="Label" parent="RootPanel/Margin/VBox/InventoryGrid"]
+layout_mode = 2
+text = "0"
+
+[node name="HSeparator2" type="HSeparator" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="BuildingsTitle" type="Label" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+text = "Gebäude"
+
+[node name="BuildingButtons" type="HBoxContainer" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UpgradeWellButton" type="Button" parent="RootPanel/Margin/VBox/BuildingButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Brunnen upgraden"
+
+[node name="UpgradeLumberButton" type="Button" parent="RootPanel/Margin/VBox/BuildingButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Holzfäller upgraden"
+
+[node name="UpgradeStoneButton" type="Button" parent="RootPanel/Margin/VBox/BuildingButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Steinmetz upgraden"
+
+[node name="HSeparator3" type="HSeparator" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="SellTitle" type="Label" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+text = "Fixverkauf (NPC-Markt)"
+
+[node name="SellButtons" type="HBoxContainer" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SellWater10" type="Button" parent="RootPanel/Margin/VBox/SellButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Wasser x10 verkaufen"
+
+[node name="SellWood10" type="Button" parent="RootPanel/Margin/VBox/SellButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Holz x10 verkaufen"
+
+[node name="SellStone10" type="Button" parent="RootPanel/Margin/VBox/SellButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Stein x10 verkaufen"
+
+[node name="HSeparator4" type="HSeparator" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="RootPanel/Margin/VBox"]
+layout_mode = 2
+text = ""

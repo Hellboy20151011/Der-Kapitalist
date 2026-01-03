@@ -11,7 +11,7 @@ func _ready() -> void:
 	login_btn.pressed.connect(_on_login_pressed)
 	register_btn.pressed.connect(_on_register_pressed)
 
-	# Optional: Felder vorfüllen für локales Testing
+	# Optional: Felder vorfüllen für lokales Testing
 	# email_edit.text = "test@example.com"
 	# pass_edit.text = "test1234"
 
