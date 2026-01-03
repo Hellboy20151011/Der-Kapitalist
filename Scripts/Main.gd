@@ -104,27 +104,6 @@ func _ready() -> void:
 	sell_wood_btn.pressed.connect(func(): await _sell("wood", 10))
 	sell_stone_btn.pressed.connect(func(): await _sell("stone", 10))
 
-	
-	upgrade_well_btn.pressed.connect(func(): await _upgrade("well"))
-	upgrade_lumber_btn.pressed.connect(func(): await _upgrade("lumberjack"))
-	upgrade_stone_btn.pressed.connect(func(): await _upgrade("stonemason"))
-
-	build_well_btn.pressed.connect(func(): await _build("well"))
-	build_lumber_btn.pressed.connect(func(): await _build("lumberjack"))
-	build_stone_btn.pressed.connect(func(): await _build("stonemason"))
-
-	well_slider.value_changed.connect(func(val): well_qty_label.text = str(int(val)))
-	lumber_slider.value_changed.connect(func(val): lumber_qty_label.text = str(int(val)))
-	stone_slider.value_changed.connect(func(val): stone_qty_label.text = str(int(val)))
-
-	well_produce_btn.pressed.connect(func(): await _produce("well", int(well_slider.value)))
-	lumber_produce_btn.pressed.connect(func(): await _produce("lumberjack", int(lumber_slider.value)))
-	stone_produce_btn.pressed.connect(func(): await _produce("stonemason", int(stone_slider.value)))
-
-	sell_water_btn.pressed.connect(func(): await _sell("water", 10))
-	sell_wood_btn.pressed.connect(func(): await _sell("wood", 10))
-	sell_stone_btn.pressed.connect(func(): await _sell("stone", 10))
-
 	# Polling alle 5 Sekunden für Produktionsstatus
 	poll_timer = Timer.new()
 	poll_timer.wait_time = 5.0
@@ -215,14 +194,6 @@ func _sync_state() -> void:
 	var wood = str(inv.get("wood", "0"))
 	var stone = str(inv.get("stone", "0"))
 	
-	stats_line1.text = "Bargeld: %s €" % coins
-	stats_line2.text = "Gesamtkapital: %s €" % coins
-	
-	# Update legacy UI
-	water_value.text = water
-	wood_value.text = wood
-	stone_value.text = stone
-
 	# Check which buildings the player has
 	var buildings = s.get("buildings", [])
 	has_well = false
@@ -239,7 +210,17 @@ func _sync_state() -> void:
 		elif b.type == "stonemason":
 			has_stonemason = true
 	
+	# Update new UI stats
+	stats_line1.text = "Bargeld: %s €" % coins
+	# Calculate approximate total capital (coins + building count * 1000 as rough estimate)
+	var total_capital = int(coins) + (building_count * 1000)
+	stats_line2.text = "Gesamtkapital: %s €" % str(total_capital)
 	stats_line3.text = "Markt: 0  Gebäude: %d  Coins: %s" % [building_count, coins]
+	
+	# Update legacy UI
+	water_value.text = water
+	wood_value.text = wood
+	stone_value.text = stone
 	
 	# Update UI based on owned buildings
 	_update_building_ui()
