@@ -73,7 +73,17 @@ export async function applyCatchUpProduction(client, userId) {
   );
 
   // Sum production per resource
-  const add = { water: 0n, wood: 0n, stone: 0n };
+  const add = { 
+    water: 0n, 
+    wood: 0n, 
+    stone: 0n, 
+    sand: 0n, 
+    limestone: 0n, 
+    cement: 0n, 
+    concrete: 0n, 
+    stone_blocks: 0n, 
+    wood_planks: 0n 
+  };
 
   for (const row of bRes.rows) {
     const bt = row.building_type;
