@@ -1,0 +1,46 @@
+Root: Control (Name: Main)
+Unter Main:
+PanelContainer (Name: RootPanel)
+MarginContainer (Name: Margin)
+VBoxContainer (Name: VBox)
+HBoxContainer (Name: TopBar)
+Label (Name: CoinsLabel)
+Button (Name: SyncButton)
+Button (Name: LogoutButton)
+HSeparator
+GridContainer (Name: InventoryGrid)
+Label (Name: WaterText)  (Text: Wasser:)
+Label (Name: WaterValue)
+Label (Name: WoodText)   (Text: Holz:)
+Label (Name: WoodValue)
+Label (Name: StoneText)  (Text: Stein:)
+Label (Name: StoneValue)
+HSeparator
+Label (Name: BuildingsTitle) (Text: Gebäude)
+HBoxContainer (Name: BuildingButtons)
+Button (Name: UpgradeWellButton)
+Button (Name: UpgradeLumberButton)
+Button (Name: UpgradeStoneButton)
+HSeparator
+Label (Name: SellTitle) (Text: Fixverkauf (NPC-Markt))
+HBoxContainer (Name: SellButtons)
+Button (Name: SellWater10)
+Button (Name: SellWood10)
+Button (Name: SellStone10)
+HSeparator
+Label (Name: StatusLabel)
+2.3 UI-Einstellungen
+Main Layout → Full Rect
+CoinsLabel.text = Coins: 0
+SyncButton.text = Sync
+LogoutButton.text = Logout
+InventoryGrid.columns = 2
+Upgrade Buttons:
+UpgradeWellButton.text = Brunnen upgraden
+UpgradeLumberButton.text = Holzfäller upgraden
+UpgradeStoneButton.text = Steinmetz upgraden
+Sell Buttons:
+SellWater10.text = Wasser x10 verkaufen
+SellWood10.text = Holz x10 verkaufen
+SellStone10.text = Stein x10 verkaufen
+StatusLabel.text leer
