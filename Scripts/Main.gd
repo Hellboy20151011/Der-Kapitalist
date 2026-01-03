@@ -61,7 +61,7 @@ extends Control
 var poll_timer: Timer
 var has_well := false
 var has_lumberjack := false
-var has_stonemason := false
+var has_sandgrube := false
 
 func _ready() -> void:
 	status_label.text = ""
@@ -86,11 +86,11 @@ func _ready() -> void:
 
 	upgrade_well_btn.pressed.connect(func(): await _upgrade("well"))
 	upgrade_lumber_btn.pressed.connect(func(): await _upgrade("lumberjack"))
-	upgrade_stone_btn.pressed.connect(func(): await _upgrade("stonemason"))
+	upgrade_stone_btn.pressed.connect(func(): await _upgrade("sandgrube"))
 
 	build_well_btn.pressed.connect(func(): await _build("well"))
 	build_lumber_btn.pressed.connect(func(): await _build("lumberjack"))
-	build_stone_btn.pressed.connect(func(): await _build("stonemason"))
+	build_stone_btn.pressed.connect(func(): await _build("sandgrube"))
 
 	well_slider.value_changed.connect(func(val): well_qty_label.text = str(int(val)))
 	lumber_slider.value_changed.connect(func(val): lumber_qty_label.text = str(int(val)))
@@ -98,7 +98,7 @@ func _ready() -> void:
 
 	well_produce_btn.pressed.connect(func(): await _produce("well", int(well_slider.value)))
 	lumber_produce_btn.pressed.connect(func(): await _produce("lumberjack", int(lumber_slider.value)))
-	stone_produce_btn.pressed.connect(func(): await _produce("stonemason", int(stone_slider.value)))
+	stone_produce_btn.pressed.connect(func(): await _produce("sandgrube", int(stone_slider.value)))
 
 	sell_water_btn.pressed.connect(func(): await _sell("water", 10))
 	sell_wood_btn.pressed.connect(func(): await _sell("wood", 10))
@@ -160,11 +160,11 @@ func _on_lumber_icon_pressed() -> void:
 		_set_status("Du hast noch keinen Holzfäller. Baue einen!")
 
 func _on_stone_icon_pressed() -> void:
-	if has_stonemason:
-		_set_status("Steinmetz ausgewählt")
-		_show_building_dialog("Steinmetz", "Dies ist dein Steinmetz - Produktionsgebäude", "stone")
+	if has_sandgrube:
+		_set_status("Sandgrube ausgewählt")
+		_show_building_dialog("Sandgrube", "Dies ist deine Sandgrube - Produktionsgebäude", "sand")
 	else:
-		_set_status("Du hast noch keinen Steinmetz. Baue einen!")
+		_set_status("Du hast noch keine Sandgrube. Baue eine!")
 
 func _show_building_dialog(title: String, desc: String, resource_type: String) -> void:
 	dialog_title.text = title
@@ -198,7 +198,7 @@ func _sync_state() -> void:
 	var buildings = s.get("buildings", [])
 	has_well = false
 	has_lumberjack = false
-	has_stonemason = false
+	has_sandgrube = false
 	var building_count = 0
 	
 	for b in buildings:
@@ -207,8 +207,8 @@ func _sync_state() -> void:
 			has_well = true
 		elif b.type == "lumberjack":
 			has_lumberjack = true
-		elif b.type == "stonemason":
-			has_stonemason = true
+		elif b.type == "sandgrube":
+			has_sandgrube = true
 	
 	# Update new UI stats
 	stats_line1.text = "Bargeld: %s €" % coins
@@ -256,20 +256,20 @@ func _update_building_ui() -> void:
 	# Enable/disable build buttons based on ownership
 	build_well_btn.disabled = has_well
 	build_lumber_btn.disabled = has_lumberjack
-	build_stone_btn.disabled = has_stonemason
+	build_stone_btn.disabled = has_sandgrube
 	
 	# Enable/disable upgrade buttons based on ownership
 	upgrade_well_btn.disabled = not has_well
 	upgrade_lumber_btn.disabled = not has_lumberjack
-	upgrade_stone_btn.disabled = not has_stonemason
+	upgrade_stone_btn.disabled = not has_sandgrube
 	
 	# Enable/disable production controls based on ownership
 	well_slider.editable = has_well
 	well_produce_btn.disabled = not has_well
 	lumber_slider.editable = has_lumberjack
 	lumber_produce_btn.disabled = not has_lumberjack
-	stone_slider.editable = has_stonemason
-	stone_produce_btn.disabled = not has_stonemason
+	stone_slider.editable = has_sandgrube
+	stone_produce_btn.disabled = not has_sandgrube
 
 func _build(building_type: String) -> void:
 	var res := await Net.post_json("/economy/buildings/build", {"building_type": building_type})
