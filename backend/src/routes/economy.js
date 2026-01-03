@@ -2,7 +2,6 @@ import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
-import { applyCatchUpProduction } from '../services/simService.js';
 
 export const economyRouter = express.Router();
 
@@ -34,7 +33,7 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    await applyCatchUpProduction(client, userId);
+    // Idle production removed: buildings no longer produce automatically over time
 
     const invRes = await client.query(
       `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = $2 FOR UPDATE`,
@@ -94,7 +93,7 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    await applyCatchUpProduction(client, userId);
+    // Idle production removed: buildings no longer produce automatically over time
 
     const bRes = await client.query(
       `SELECT level FROM buildings WHERE user_id = $1 AND building_type = $2 FOR UPDATE`,

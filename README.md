@@ -26,10 +26,10 @@ Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
 
 ## Spielmechanik
 
-Der-Kapitalist ist ein Idle-/Wirtschaftsspiel, bei dem Spieler:
-- Ressourcen produzieren (Wasser, Holz, Stein)
-- Gebäude bauen und upgraden (Brunnen, Holzfäller, Steinmetz)
-- Produktions-Jobs starten (verbrauchen Zeit und Ressourcen)
+Der-Kapitalist ist ein Wirtschaftsspiel, bei dem Spieler:
+- Ressourcen produzieren (Wasser, Holz, Stein, etc.)
+- Gebäude bauen und upgraden (Brunnen, Holzfäller, Steinmetz, etc.)
+- **Manuelle Produktions-Jobs starten** - Produktion wird über Schieberegler gestartet und läuft für die gewählte Anzahl × Produktionszeit
 - Ressourcen gegen Münzen verkaufen
 - Mit anderen Spielern auf dem Marktplatz handeln
-- Offline-Produktion für bis zu 8 Stunden erhalten
+- **KEINE automatische Idle-Produktion** - Gebäude produzieren nur wenn Jobs manuell gestartet werden

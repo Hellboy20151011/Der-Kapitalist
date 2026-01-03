@@ -1,7 +1,6 @@
 import express from 'express';
 import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
-import { applyCatchUpProduction } from '../services/simService.js';
 
 export const stateRouter = express.Router();
 
@@ -12,7 +11,7 @@ stateRouter.get('/', authRequired, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    await applyCatchUpProduction(client, userId);
+    // Idle production removed: buildings no longer produce automatically over time
 
     const stateRes = await client.query(
       `SELECT coins, last_tick_at FROM player_state WHERE user_id = $1`,
