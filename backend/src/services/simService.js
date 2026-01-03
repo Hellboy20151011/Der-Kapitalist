@@ -1,11 +1,16 @@
-const RESOURCES = ['water', 'wood', 'stone'];
-const BUILDINGS = ['well', 'lumberjack', 'stonemason'];
+const RESOURCES = ['water', 'wood', 'stone', 'sand', 'limestone', 'cement', 'concrete', 'stone_blocks', 'wood_planks'];
+const BUILDINGS = ['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'];
 
 // Startwerte: Produktion pro Minute bei Level 1
 const BASE_RATE_PER_MIN = {
   well: 30,
   lumberjack: 15,
-  stonemason: 10
+  sandgrube: 10,
+  kalktagebau: 8,
+  steinfabrik: 6,
+  saegewerk: 12,
+  zementwerk: 5,
+  betonfabrik: 4
 };
 
 // Wachstumsfaktor pro Level
@@ -23,7 +28,12 @@ function ratePerSecond(buildingType, level) {
 function producedResourceForBuilding(buildingType) {
   if (buildingType === 'well') return 'water';
   if (buildingType === 'lumberjack') return 'wood';
-  if (buildingType === 'stonemason') return 'stone';
+  if (buildingType === 'sandgrube') return 'sand';
+  if (buildingType === 'kalktagebau') return 'limestone';
+  if (buildingType === 'steinfabrik') return 'stone_blocks';
+  if (buildingType === 'saegewerk') return 'wood_planks';
+  if (buildingType === 'zementwerk') return 'cement';
+  if (buildingType === 'betonfabrik') return 'concrete';
   return null;
 }
 
@@ -63,7 +73,17 @@ export async function applyCatchUpProduction(client, userId) {
   );
 
   // Sum production per resource
-  const add = { water: 0n, wood: 0n, stone: 0n };
+  const add = { 
+    water: 0n, 
+    wood: 0n, 
+    stone: 0n, 
+    sand: 0n, 
+    limestone: 0n, 
+    cement: 0n, 
+    concrete: 0n, 
+    stone_blocks: 0n, 
+    wood_planks: 0n 
+  };
 
   for (const row of bRes.rows) {
     const bt = row.building_type;

@@ -6,10 +6,20 @@ import { applyCatchUpProduction } from '../services/simService.js';
 
 export const economyRouter = express.Router();
 
-const SELL_PRICES = { water: 1.2, wood: 1.3, stone: 1.4 };
+const SELL_PRICES = { 
+  water: 1.2, 
+  wood: 1.3, 
+  stone: 1.4,
+  sand: 1.5,
+  limestone: 1.6,
+  cement: 2.0,
+  concrete: 2.5,
+  stone_blocks: 2.2,
+  wood_planks: 1.8
+};
 
 const sellSchema = z.object({
-  resource_type: z.enum(['water', 'wood', 'stone']),
+  resource_type: z.enum(['water', 'wood', 'stone', 'sand', 'limestone', 'cement', 'concrete', 'stone_blocks', 'wood_planks']),
   quantity: z.number().int().positive().max(1_000_000)
 });
 
@@ -63,7 +73,7 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
 });
 
 const upgradeSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'stonemason'])
+  building_type: z.enum(['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'])
 });
 
 // Simple Kostenkurve: 100 * 1.6^(level-1)
@@ -133,12 +143,17 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
 // Building costs for construction (not upgrades)
 const BUILD_COSTS = {
   lumberjack: { coins: 10n, wood: 10n, stone: 0n },
-  stonemason: { coins: 10n, wood: 10n, stone: 0n },
-  well: { coins: 10n, wood: 10n, stone: 20n }
+  sandgrube: { coins: 10n, wood: 10n, stone: 0n },
+  well: { coins: 10n, wood: 10n, stone: 20n },
+  kalktagebau: { coins: 50n, wood: 20n, stone: 30n },
+  steinfabrik: { coins: 100n, wood: 30n, sand: 50n },
+  saegewerk: { coins: 75n, wood: 40n, stone: 20n },
+  zementwerk: { coins: 150n, wood: 30n, sand: 40n, limestone: 40n },
+  betonfabrik: { coins: 200n, wood: 40n, cement: 30n, sand: 60n }
 };
 
 const buildSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'stonemason'])
+  building_type: z.enum(['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'])
 });
 
 economyRouter.post('/buildings/build', authRequired, async (req, res) => {
@@ -176,29 +191,20 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
       return res.status(400).json({ error: 'not_enough_coins' });
     }
 
-    // Check wood
-    if (costs.wood > 0n) {
-      const woodRes = await client.query(
-        `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = 'wood' FOR UPDATE`,
-        [userId]
-      );
-      const wood = woodRes.rowCount ? BigInt(woodRes.rows[0].amount) : 0n;
-      if (wood < costs.wood) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'not_enough_wood' });
-      }
-    }
-
-    // Check stone
-    if (costs.stone > 0n) {
-      const stoneRes = await client.query(
-        `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = 'stone' FOR UPDATE`,
-        [userId]
-      );
-      const stone = stoneRes.rowCount ? BigInt(stoneRes.rows[0].amount) : 0n;
-      if (stone < costs.stone) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'not_enough_stone' });
+    // Check all resource costs dynamically
+    const resourceTypes = Object.keys(costs).filter(k => k !== 'coins');
+    for (const resourceType of resourceTypes) {
+      const required = costs[resourceType];
+      if (required > 0n) {
+        const resourceRes = await client.query(
+          `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = $2 FOR UPDATE`,
+          [userId, resourceType]
+        );
+        const have = resourceRes.rowCount ? BigInt(resourceRes.rows[0].amount) : 0n;
+        if (have < required) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ error: `not_enough_${resourceType}` });
+        }
       }
     }
 
@@ -208,18 +214,14 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
       [userId, costs.coins.toString()]
     );
 
-    if (costs.wood > 0n) {
-      await client.query(
-        `UPDATE inventory SET amount = amount - $2 WHERE user_id = $1 AND resource_type = 'wood'`,
-        [userId, costs.wood.toString()]
-      );
-    }
-
-    if (costs.stone > 0n) {
-      await client.query(
-        `UPDATE inventory SET amount = amount - $2 WHERE user_id = $1 AND resource_type = 'stone'`,
-        [userId, costs.stone.toString()]
-      );
+    for (const resourceType of resourceTypes) {
+      const required = costs[resourceType];
+      if (required > 0n) {
+        await client.query(
+          `UPDATE inventory SET amount = amount - $2 WHERE user_id = $1 AND resource_type = $3`,
+          [userId, required.toString(), resourceType]
+        );
+      }
     }
 
     // Build the building
@@ -239,16 +241,66 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
 });
 // Production mechanics:
 // - Well: 1 coin → 1 water in 3 seconds
-// - Stonemason: 1 coin + 1 water → 2 stone in 5 seconds
 // - Lumberjack: 1 coin + 1 water → 10 wood in 5 seconds
+// - Sandgrube: 1 coin + 1 water → 2 sand in 5 seconds
+// - Kalktagebau: 1 coin + 1 water → 2 limestone in 6 seconds
+// - Steinfabrik: 2 coins + 2 sand → 3 stone_blocks in 8 seconds
+// - Saegewerk: 1 coin + 5 wood → 8 wood_planks in 7 seconds
+// - Zementwerk: 2 coins + 2 limestone + 1 sand → 4 cement in 10 seconds
+// - Betonfabrik: 2 coins + 3 cement + 2 sand → 5 concrete in 12 seconds
 const PRODUCTION_CONFIG = {
-  well: { coin_cost: 1n, water_cost: 0n, duration_seconds: 3, output_type: 'water', output_amount: 1n },
-  stonemason: { coin_cost: 1n, water_cost: 1n, duration_seconds: 5, output_type: 'stone', output_amount: 2n },
-  lumberjack: { coin_cost: 1n, water_cost: 1n, duration_seconds: 5, output_type: 'wood', output_amount: 10n }
+  well: { 
+    costs: { coins: 1n, water: 0n }, 
+    duration_seconds: 3, 
+    output_type: 'water', 
+    output_amount: 1n 
+  },
+  lumberjack: { 
+    costs: { coins: 1n, water: 1n }, 
+    duration_seconds: 5, 
+    output_type: 'wood', 
+    output_amount: 10n 
+  },
+  sandgrube: { 
+    costs: { coins: 1n, water: 1n }, 
+    duration_seconds: 5, 
+    output_type: 'sand', 
+    output_amount: 2n 
+  },
+  kalktagebau: { 
+    costs: { coins: 1n, water: 1n }, 
+    duration_seconds: 6, 
+    output_type: 'limestone', 
+    output_amount: 2n 
+  },
+  steinfabrik: { 
+    costs: { coins: 2n, sand: 2n }, 
+    duration_seconds: 8, 
+    output_type: 'stone_blocks', 
+    output_amount: 3n 
+  },
+  saegewerk: { 
+    costs: { coins: 1n, wood: 5n }, 
+    duration_seconds: 7, 
+    output_type: 'wood_planks', 
+    output_amount: 8n 
+  },
+  zementwerk: { 
+    costs: { coins: 2n, limestone: 2n, sand: 1n }, 
+    duration_seconds: 10, 
+    output_type: 'cement', 
+    output_amount: 4n 
+  },
+  betonfabrik: { 
+    costs: { coins: 2n, cement: 3n, sand: 2n }, 
+    duration_seconds: 12, 
+    output_type: 'concrete', 
+    output_amount: 5n 
+  }
 };
 
 const productionStartSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'stonemason']),
+  building_type: z.enum(['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik']),
   quantity: z.number().int().positive().max(1000) // UI slider shows 1-100, but allow higher for flexibility
 });
 
@@ -275,44 +327,61 @@ economyRouter.post('/production/start', authRequired, async (req, res) => {
     }
 
     const config = PRODUCTION_CONFIG[building_type];
-    const totalCoinCost = config.coin_cost * BigInt(quantity);
-    const totalWaterCost = config.water_cost * BigInt(quantity);
-
-    // Check coins
-    const stateRes = await client.query(
-      `SELECT coins FROM player_state WHERE user_id = $1 FOR UPDATE`,
-      [userId]
-    );
-    const coins = BigInt(stateRes.rows[0].coins);
-    if (coins < totalCoinCost) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'not_enough_coins' });
+    const costs = config.costs;
+    
+    // Calculate total costs for all units
+    const totalCosts = {};
+    for (const [resource, cost] of Object.entries(costs)) {
+      totalCosts[resource] = cost * BigInt(quantity);
     }
 
-    // Check water if needed
-    if (totalWaterCost > 0n) {
-      const waterRes = await client.query(
-        `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = 'water' FOR UPDATE`,
+    // Check coins
+    if (totalCosts.coins > 0n) {
+      const stateRes = await client.query(
+        `SELECT coins FROM player_state WHERE user_id = $1 FOR UPDATE`,
         [userId]
       );
-      const water = waterRes.rowCount ? BigInt(waterRes.rows[0].amount) : 0n;
-      if (water < totalWaterCost) {
+      const coins = BigInt(stateRes.rows[0].coins);
+      if (coins < totalCosts.coins) {
         await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'not_enough_water' });
+        return res.status(400).json({ error: 'not_enough_coins' });
       }
     }
 
-    // Deduct costs
-    await client.query(
-      `UPDATE player_state SET coins = coins - $2 WHERE user_id = $1`,
-      [userId, totalCoinCost.toString()]
-    );
+    // Check all resource costs dynamically
+    const resourceTypes = Object.keys(costs).filter(k => k !== 'coins');
+    for (const resourceType of resourceTypes) {
+      const required = totalCosts[resourceType];
+      if (required > 0n) {
+        const resourceRes = await client.query(
+          `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = $2 FOR UPDATE`,
+          [userId, resourceType]
+        );
+        const have = resourceRes.rowCount ? BigInt(resourceRes.rows[0].amount) : 0n;
+        if (have < required) {
+          await client.query('ROLLBACK');
+          return res.status(400).json({ error: `not_enough_${resourceType}` });
+        }
+      }
+    }
 
-    if (totalWaterCost > 0n) {
+    // Deduct coins
+    if (totalCosts.coins > 0n) {
       await client.query(
-        `UPDATE inventory SET amount = amount - $2 WHERE user_id = $1 AND resource_type = 'water'`,
-        [userId, totalWaterCost.toString()]
+        `UPDATE player_state SET coins = coins - $2 WHERE user_id = $1`,
+        [userId, totalCosts.coins.toString()]
       );
+    }
+
+    // Deduct resources
+    for (const resourceType of resourceTypes) {
+      const required = totalCosts[resourceType];
+      if (required > 0n) {
+        await client.query(
+          `UPDATE inventory SET amount = amount - $2 WHERE user_id = $1 AND resource_type = $3`,
+          [userId, required.toString(), resourceType]
+        );
+      }
     }
 
     // Create production job
