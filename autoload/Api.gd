@@ -1,5 +1,5 @@
 extends Node
-class_name Api
+# class_name Api
 
 # Base URL can be configured in project settings or overridden via environment
 # Default to localhost for development
@@ -233,4 +233,3 @@ func _get_network_error_message(error_code: int) -> String:
 			return "Zu viele Weiterleitungen"
 		_:
 			return "Netzwerkfehler (Code: %d)" % error_code
-

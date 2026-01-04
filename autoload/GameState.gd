@@ -1,5 +1,5 @@
 extends Node
-class_name GameState
+# class_name GameState
 
 # Authentication state
 var token: String = ""
