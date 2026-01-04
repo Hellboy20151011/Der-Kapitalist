@@ -17,8 +17,16 @@ function log(level, message, context = {}) {
     ...context
   };
   
-  // In production, this would go to a structured logging service
-  console.log(JSON.stringify(logEntry));
+  const output = JSON.stringify(logEntry);
+  
+  // Route to appropriate console stream based on log level
+  if (level === LOG_LEVELS.ERROR) {
+    console.error(output);
+  } else if (level === LOG_LEVELS.WARN) {
+    console.warn(output);
+  } else {
+    console.log(output);
+  }
 }
 
 export const logger = {

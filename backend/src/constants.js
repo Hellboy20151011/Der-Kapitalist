@@ -1,7 +1,7 @@
 // Game Configuration Constants
 // Centralized configuration for game mechanics
 
-// Production costs (coins per unit)
+// Production costs (coins per unit) - BigInt for database compatibility
 export const PRODUCTION_COSTS = {
   well: 1n,
   lumberjack: 2n,
@@ -13,7 +13,8 @@ export const PRODUCTION_COSTS = {
   betonfabrik: 2n
 };
 
-// Production time (seconds per unit)
+// Production time (seconds per unit) - Regular numbers for time calculations
+// Note: These are used for time intervals, not database values, so no BigInt needed
 export const PRODUCTION_TIME = {
   well: 3,
   lumberjack: 5,

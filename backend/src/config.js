@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { logger } from './logger.js';
 
 export const config = {
   port: Number(process.env.PORT ?? 3000),
@@ -11,5 +12,8 @@ export const config = {
 if (!config.dbUrl) throw new Error("DATABASE_URL missing in .env");
 if (!config.jwtSecret) throw new Error("JWT_SECRET missing in .env");
 if (config.jwtSecret.length < 32) {
-  console.warn("WARNING: JWT_SECRET should be at least 32 characters for production security");
+  logger.warn("JWT_SECRET should be at least 32 characters for production security", {
+    currentLength: config.jwtSecret.length,
+    recommendedLength: 32
+  });
 }

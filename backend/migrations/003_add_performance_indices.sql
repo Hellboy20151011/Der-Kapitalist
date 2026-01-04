@@ -17,6 +17,8 @@ CREATE INDEX IF NOT EXISTS idx_market_seller ON market_listings(seller_user_id);
 -- Already exists: idx_production_user ON production_queue(user_id, status)
 
 -- Add constraints to prevent negative values
+-- Note: coins >= 0 allows zero coins, which is valid when a player spends all coins
+-- Players can still perform free actions and earn more coins through gameplay
 ALTER TABLE player_state
 ADD CONSTRAINT IF NOT EXISTS chk_coins_non_negative CHECK (coins >= 0);
 
