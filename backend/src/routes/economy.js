@@ -63,8 +63,9 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
 
     await client.query('COMMIT');
     return res.json({ ok: true });
-  } catch {
+  } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Resource sell error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
@@ -131,8 +132,9 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
 
     await client.query('COMMIT');
     return res.json({ ok: true });
-  } catch {
+  } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Building upgrade error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
@@ -231,8 +233,9 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
 
     await client.query('COMMIT');
     return res.json({ ok: true });
-  } catch {
+  } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Building construction error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
@@ -245,6 +248,15 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
 // The frontend currently uses /production/* endpoints (production.js) instead.
 // This implementation uses production_queue for multi-job queuing.
 // See KNOWN_ISSUES.md for details on the production system duplication.
+// 
+// TODO: Decide whether to:
+// 1. Remove this duplicate production system and consolidate to production.js
+// 2. Migrate frontend to use this queue-based system instead
+// 3. Keep both and clearly document when each should be used
+// 
+// The duplicate code creates maintenance burden and potential bugs if only one
+// system is updated while the other remains unchanged.
+// ============================================================================
 // ============================================================================
 
 // Production mechanics:
@@ -409,8 +421,9 @@ economyRouter.post('/production/start', authRequired, async (req, res) => {
       production_id: prodRes.rows[0].id,
       finishes_at: prodRes.rows[0].finishes_at
     });
-  } catch {
+  } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Production start error (queue-based):', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
@@ -473,8 +486,9 @@ economyRouter.get('/production/status', authRequired, async (req, res) => {
         finishes_at: r.finishes_at
       }))
     });
-  } catch {
+  } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Production status check error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();

@@ -14,7 +14,7 @@ const authSchema = z.object({
 
 function signToken(userId) {
   return jwt.sign({}, config.jwtSecret, {
-    subject: userId,
+    subject: String(userId),
     expiresIn: config.jwtExpiresIn
   });
 }

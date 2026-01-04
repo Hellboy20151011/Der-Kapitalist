@@ -108,6 +108,7 @@ marketRouter.post('/listings', authRequired, async (req, res) => {
     });
   } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Market listing creation error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
@@ -124,6 +125,12 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
 
   const userId = req.user.id;
   const listingId = req.params.id;
+  
+  // Validate listing ID is a positive integer
+  const listingIdNum = parseInt(listingId, 10);
+  if (isNaN(listingIdNum) || listingIdNum <= 0) {
+    return res.status(400).json({ error: 'invalid_listing_id' });
+  }
 
   const client = await pool.connect();
   try {
@@ -137,7 +144,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
        FROM market_listings
        WHERE id = $1
        FOR UPDATE`,
-      [listingId]
+      [listingIdNum]
     );
 
     if (lRes.rowCount === 0) {
@@ -154,7 +161,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
 
     if (new Date(listing.expires_at).getTime() <= Date.now()) {
       // Ablauf -> als expired markieren und abbrechen
-      await client.query(`UPDATE market_listings SET status = 'expired' WHERE id = $1`, [listingId]);
+      await client.query(`UPDATE market_listings SET status = 'expired' WHERE id = $1`, [listingIdNum]);
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'listing_expired' });
     }
@@ -207,7 +214,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
     // Listing auf sold setzen
     await client.query(
       `UPDATE market_listings SET status = 'sold' WHERE id = $1`,
-      [listingId]
+      [listingIdNum]
     );
 
     await client.query('COMMIT');
@@ -222,6 +229,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
     });
   } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Market listing purchase error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();

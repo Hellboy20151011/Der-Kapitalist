@@ -272,7 +272,8 @@ func _add_listing_item(listing: Dictionary) -> void:
 	var price_label = Label.new()
 	var price_per_unit = int(listing.get("price_per_unit", "0"))
 	var quantity = int(listing.get("quantity", "0"))
-	var total = price_per_unit * quantity
+	# Prevent integer overflow by capping the calculation
+	var total = min(price_per_unit * quantity, 9223372036854775807)  # Max int64
 	price_label.text = "Preis: %d Coins/Stück (Gesamt: %d Coins)" % [price_per_unit, total]
 	info_vbox.add_child(price_label)
 	
