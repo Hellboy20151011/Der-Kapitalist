@@ -512,6 +512,9 @@ func _logout() -> void:
 	get_tree().change_scene_to_file("res://Scenes/Auth/Login.tscn")
 
 func _error_string(res: Dictionary) -> String:
+	# Check for new error details field (network errors, timeouts)
+	if res.has("details"):
+		return str(res.details)
 	if res.has("data") and typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
 		return str(res.data.error)
 	if res.has("code"):

@@ -42,7 +42,10 @@ func _auth(register: bool) -> void:
 
 	if not res.ok:
 		var msg := "Fehler"
-		if typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
+		# Check for new error details field (network errors, timeouts)
+		if res.has("details"):
+			msg = str(res.details)
+		elif typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
 			msg = str(res.data.error)
 		status_label.text = (register ? "Registrierung fehlgeschlagen: " : "Login fehlgeschlagen: ") + msg
 		_set_busy(false)
