@@ -72,9 +72,10 @@ stateRouter.get('/', authRequired, async (req, res) => {
             b.is_producing = false;
             b.ready_at = null;
             b.producing_qty = null;
-          } else if (b.is_producing && b.ready_at && new Date(b.ready_at) <= now) {
-            // Production finished but we can't collect - reset building state to avoid stuck state
-            console.error(`Cannot collect production for building ${b.building_type} - resetting state`);
+          } else {
+            // Production finished but we can't collect (qty=0 or unknown resource)
+            // Reset building state to avoid stuck state
+            console.error(`Cannot collect production for building ${b.building_type} (qty=${b.producing_qty}, resource=${resource}) - resetting state`);
             await client.query(
               `UPDATE buildings
                SET is_producing = false, ready_at = NULL, producing_qty = NULL
