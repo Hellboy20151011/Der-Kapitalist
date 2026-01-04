@@ -39,84 +39,10 @@ function producedResourceForBuilding(buildingType) {
 
 /**
  * IDLE PRODUCTION DISABLED
- * This function previously provided automatic resource production based on elapsed time.
- * Now production is manual only - players must start production via the UI slider system.
- * Keeping this code commented for reference.
+ * 
+ * This service previously provided automatic resource production based on elapsed time.
+ * Production is now manual only - players must start production via the UI slider system.
+ * 
+ * The functions and constants above are kept for potential future use or reference,
+ * but are not currently used in the production system.
  */
-/* 
-export async function applyCatchUpProduction(client, userId) {
-  const stateRes = await client.query(
-    `SELECT coins, last_tick_at
-     FROM player_state
-     WHERE user_id = $1
-     FOR UPDATE`,
-    [userId]
-  );
-
-  if (stateRes.rowCount === 0) {
-    // user has no state yet (should not happen if register is correct)
-    await client.query(
-      `INSERT INTO player_state(user_id, coins, last_tick_at) VALUES ($1, 0, now())`,
-      [userId]
-    );
-    return;
-  }
-
-  const lastTickAt = new Date(stateRes.rows[0].last_tick_at);
-  const now = new Date();
-  let elapsedSeconds = Math.floor((now.getTime() - lastTickAt.getTime()) / 1000);
-  if (elapsedSeconds <= 0) return;
-
-  elapsedSeconds = Math.min(elapsedSeconds, MAX_ELAPSED_SECONDS);
-
-  // Get buildings
-  const bRes = await client.query(
-    `SELECT building_type, level FROM buildings WHERE user_id = $1`,
-    [userId]
-  );
-
-  // Sum production per resource
-  const add = { 
-    water: 0n, 
-    wood: 0n, 
-    stone: 0n, 
-    sand: 0n, 
-    limestone: 0n, 
-    cement: 0n, 
-    concrete: 0n, 
-    stone_blocks: 0n, 
-    wood_planks: 0n 
-  };
-
-  for (const row of bRes.rows) {
-    const bt = row.building_type;
-    const lvl = Number(row.level);
-    const resType = producedResourceForBuilding(bt);
-    if (!resType) continue;
-
-    const produced = ratePerSecond(bt, lvl) * elapsedSeconds;
-
-    // Deterministische Rundung: floor auf ganze Einheiten
-    const units = BigInt(Math.floor(produced));
-    add[resType] += units;
-  }
-
-  // Apply inventory increments
-  for (const r of RESOURCES) {
-    if (add[r] <= 0n) continue;
-    await client.query(
-      `INSERT INTO inventory(user_id, resource_type, amount)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (user_id, resource_type)
-       DO UPDATE SET amount = inventory.amount + EXCLUDED.amount`,
-      [userId, r, add[r].toString()]
-    );
-  }
-
-  // Update last_tick_at
-  await client.query(
-    `UPDATE player_state SET last_tick_at = now() WHERE user_id = $1`,
-    [userId]
-  );
-}
-*/

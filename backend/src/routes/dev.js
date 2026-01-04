@@ -22,6 +22,7 @@ devRouter.post('/reset-account', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await client.query('SET statement_timeout = 15000');  // Dev endpoint may take longer
     await client.query('BEGIN');
 
     // Reset player_state - give starting coins again

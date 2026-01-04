@@ -14,7 +14,9 @@ const createSchema = z.object({
 
 marketRouter.get('/listings', authRequired, async (req, res) => {
   const resourceType = req.query.resource_type;
-  const limit = Math.min(Number(req.query.limit ?? 50), 200);
+  // Validate limit is a safe positive integer
+  const limitParam = Number(req.query.limit ?? 50);
+  const limit = Math.min(Math.max(1, Math.floor(limitParam)), 200);
 
   const params = [];
   let where = `WHERE status = 'active' AND expires_at > now()`;
@@ -57,6 +59,8 @@ marketRouter.post('/listings', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    // Set statement timeout to prevent long-running transactions (10 seconds)
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
@@ -108,6 +112,7 @@ marketRouter.post('/listings', authRequired, async (req, res) => {
     });
   } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Market listing creation error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
@@ -124,9 +129,17 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
 
   const userId = req.user.id;
   const listingId = req.params.id;
+  
+  // Validate listing ID is a positive integer
+  const listingIdNum = parseInt(listingId, 10);
+  if (isNaN(listingIdNum) || listingIdNum <= 0) {
+    return res.status(400).json({ error: 'invalid_listing_id' });
+  }
 
   const client = await pool.connect();
   try {
+    // Set statement timeout to prevent long-running transactions (10 seconds)
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
@@ -137,7 +150,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
        FROM market_listings
        WHERE id = $1
        FOR UPDATE`,
-      [listingId]
+      [listingIdNum]
     );
 
     if (lRes.rowCount === 0) {
@@ -154,7 +167,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
 
     if (new Date(listing.expires_at).getTime() <= Date.now()) {
       // Ablauf -> als expired markieren und abbrechen
-      await client.query(`UPDATE market_listings SET status = 'expired' WHERE id = $1`, [listingId]);
+      await client.query(`UPDATE market_listings SET status = 'expired' WHERE id = $1`, [listingIdNum]);
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'listing_expired' });
     }
@@ -167,7 +180,15 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
     const qty = BigInt(listing.quantity);
     const pricePerUnit = BigInt(listing.price_per_unit);
 
+    // Check for potential overflow in multiplication
+    // Max safe BigInt is implementation-dependent, but we can validate against reasonable business limits
+    const MAX_COINS = BigInt('9223372036854775807'); // Max int64
     const total = qty * pricePerUnit;
+    
+    if (total > MAX_COINS) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'transaction_amount_too_large' });
+    }
     const feePercent = BigInt(listing.fee_percent);
     const fee = (total * feePercent) / 100n;
     const payout = total - fee;
@@ -207,7 +228,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
     // Listing auf sold setzen
     await client.query(
       `UPDATE market_listings SET status = 'sold' WHERE id = $1`,
-      [listingId]
+      [listingIdNum]
     );
 
     await client.query('COMMIT');
@@ -222,6 +243,7 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
     });
   } catch (e) {
     await client.query('ROLLBACK');
+    console.error('Market listing purchase error:', e);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();

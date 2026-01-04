@@ -49,13 +49,13 @@ func _auth(register: bool) -> void:
 		# Check for new error details field (network errors, timeouts)
 		if res.has("details"):
 			msg = str(res.details)
-		elif typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
+		elif res.has("data") and typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
 			msg = str(res.data.error)
 		status_label.text = ("Registrierung fehlgeschlagen: " if register else "Login fehlgeschlagen: ") + msg
 		_set_busy(false)
 		return
 
-	if typeof(res.data) != TYPE_DICTIONARY or not res.data.has("token"):
+	if not res.has("data") or typeof(res.data) != TYPE_DICTIONARY or not res.data.has("token"):
 		status_label.text = "Serverantwort unerwartet."
 		_set_busy(false)
 		return

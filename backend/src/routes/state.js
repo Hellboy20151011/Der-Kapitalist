@@ -16,6 +16,7 @@ stateRouter.get('/', authRequired, async (req, res) => {
   const client = await pool.connect();
 
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
@@ -40,9 +41,13 @@ stateRouter.get('/', authRequired, async (req, res) => {
           const qty = BigInt(b.producing_qty ?? 0);
           const resource = BUILDING_RESOURCES[b.building_type];
           
-          // Data integrity check
+          // Data integrity checks
           if (!b.producing_qty && b.is_producing) {
             console.warn(`Data integrity issue: building ${b.building_type} for user ${userId} is_producing=true but producing_qty is null`);
+          }
+          
+          if (!resource) {
+            console.warn(`Unknown building type ${b.building_type} for user ${userId} - cannot determine resource type`);
           }
           
           if (qty > 0n && resource) {
@@ -64,6 +69,19 @@ stateRouter.get('/', authRequired, async (req, res) => {
             );
             
             // Mark as collected in our local data
+            b.is_producing = false;
+            b.ready_at = null;
+            b.producing_qty = null;
+          } else {
+            // Production finished but we can't collect (qty=0 or unknown resource)
+            // Reset building state to avoid stuck state
+            console.error(`Cannot collect production for building ${b.building_type} (qty=${b.producing_qty}, resource=${resource}) - resetting state`);
+            await client.query(
+              `UPDATE buildings
+               SET is_producing = false, ready_at = NULL, producing_qty = NULL
+               WHERE user_id = $1 AND building_type = $2`,
+              [userId, b.building_type]
+            );
             b.is_producing = false;
             b.ready_at = null;
             b.producing_qty = null;
