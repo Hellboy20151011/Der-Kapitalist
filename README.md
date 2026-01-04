@@ -16,7 +16,6 @@ Ein Spiel wie Kapiland nur für Mobile Clients und als Lernprojekt.
 - **autoload/** - Godot Autoload-Skripte
   - **GameState.gd** - Global game state management
   - **Api.gd** - API communication layer
-  - **net.gd** - Legacy network layer (deprecated, use Api.gd)
 
 ### Documentation
 - **[API.md](API.md)** - Complete API endpoint documentation
@@ -39,7 +38,33 @@ Ein Spiel wie Kapiland nur für Mobile Clients und als Lernprojekt.
 
 ## Setup
 
+### Backend Setup
+
 Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
+
+**Quick Start:**
+1. Installiere PostgreSQL und erstelle eine Datenbank
+2. Kopiere `backend/.env.example` zu `backend/.env` und konfiguriere:
+   - `DATABASE_URL`: PostgreSQL Connection String
+   - `JWT_SECRET`: Sicherer Secret Key (mind. 32 Zeichen)
+   - `ALLOWED_ORIGINS`: CORS Origins (komma-separiert)
+3. Führe Datenbank-Migrationen aus:
+   ```bash
+   psql -d der_kapitalist -f backend/migrations/001_initial_schema.sql
+   psql -d der_kapitalist -f backend/migrations/002_add_building_production_columns.sql
+   psql -d der_kapitalist -f backend/migrations/003_add_performance_indices.sql
+   ```
+4. Installiere Dependencies: `cd backend && npm install`
+5. Starte den Server: `npm start`
+
+### Frontend Setup (Godot)
+
+1. Installiere Godot Engine 4.2+
+2. Öffne das Projekt in Godot
+3. (Optional) Konfiguriere API Base URL in Projekt-Einstellungen:
+   - Project → Project Settings → Application → Config
+   - Füge `api_base_url` Setting hinzu mit deiner Backend URL
+4. Drücke F5 zum Starten
 
 ## Architektur
 

@@ -9,7 +9,7 @@ var player_id: int = -1
 var coins: int = 0
 var company_name: String = ""
 
-# Inventory
+# Inventory - resource_type -> amount
 var inventory: Dictionary = {
 	"water": 0,
 	"wood": 0,
@@ -17,14 +17,14 @@ var inventory: Dictionary = {
 	"sand": 0
 }
 
-# Buildings
+# Buildings - Array of building dictionaries
 var buildings: Array = []
 
 # Server time
 var server_time: String = ""
 
+## Reset all state to defaults (e.g., on logout)
 func reset() -> void:
-	## Reset all state to defaults (e.g., on logout)
 	token = ""
 	player_id = -1
 	coins = 0

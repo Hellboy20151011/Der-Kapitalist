@@ -19,12 +19,19 @@ npm install
 cp .env.example .env
 ```
 
-3. Update `.env` with your database credentials and JWT secret.
+3. Update `.env` with your configuration:
+   - `DATABASE_URL`: PostgreSQL connection string
+   - `JWT_SECRET`: Strong secret key (minimum 32 characters recommended)
+   - `PORT`: Server port (default: 3000)
+   - `JWT_EXPIRES_IN`: Token expiration (default: 7d)
+   - `ALLOWED_ORIGINS`: CORS allowed origins (comma-separated)
 
-4. Initialize the database using the schema in `../DB_Schema.md`:
+4. Create database and run migrations:
 ```bash
-# The DB_Schema.md file contains pure SQL and can be executed directly
-psql -U your_user -d your_database < ../DB_Schema.md
+createdb der_kapitalist
+psql -d der_kapitalist -f migrations/001_initial_schema.sql
+psql -d der_kapitalist -f migrations/002_add_building_production_columns.sql
+psql -d der_kapitalist -f migrations/003_add_performance_indices.sql
 ```
 
 ## Running the Server
@@ -43,42 +50,36 @@ The server will start on `http://localhost:3000` by default.
 
 ## API Endpoints
 
-### Authentication
+See [../API.md](../API.md) for complete API documentation.
+
+### Quick Reference
+
+**Authentication:**
 - `POST /auth/register` - Register a new user
 - `POST /auth/login` - Login with email and password
 
-### Game State
-- `GET /state` - Get current player state (requires authentication)
+**Game State:**
+- `GET /state` - Get current player state (requires auth)
 
-### Economy
-- `POST /economy/sell` - Sell resources for coins (requires authentication)
-  - Body: `{ resource_type: string (enum: water, wood, stone), quantity: integer (1-1,000,000) }`
-- `POST /economy/buildings/build` - Build a new building (requires authentication)
-  - Body: `{ building_type: string (enum: well, lumberjack, sandgrube) }`
-- `POST /economy/buildings/upgrade` - Upgrade a building (requires authentication)
-  - Body: `{ building_type: string (enum: well, lumberjack, sandgrube) }`
-- `POST /economy/production/start` - Start a production job (requires authentication)
-  - Body: `{ building_type: string (enum: well, lumberjack, sandgrube), quantity: integer (1-1,000) }`
-- `GET /economy/production/status` - Get production queue status (requires authentication)
+**Production:**
+- `POST /production/start` - Start production job (requires auth)
+- `POST /production/collect` - Collect finished production (requires auth, optional - auto-collected in /state)
 
-### Market (Player-to-Player Trading)
-- `GET /market/listings` - Get active market listings (requires authentication)
-  - Query params: `resource_type` (optional: water, wood, stone), `limit` (default: 50, max: 200)
-- `POST /market/listings` - Create a new market listing (requires authentication)
-  - Body: `{ resource_type: string (enum: water, wood, stone), quantity: integer (1-1,000,000), price_per_unit: integer (1-1,000,000,000) }`
-- `POST /market/listings/:id/buy` - Buy a market listing (requires authentication)
+**Economy:**
+- `POST /economy/sell` - Sell resources for coins (requires auth)
+- `POST /economy/buildings/build` - Build a new building (requires auth)
+- `POST /economy/buildings/upgrade` - Upgrade a building (requires auth)
 
-### Health Check
+**Market:**
+- `GET /market/listings` - Get active market listings (requires auth)
+- `POST /market/listings` - Create a market listing (requires auth)
+- `POST /market/listings/:id/buy` - Buy a market listing (requires auth)
+
+**Health Check:**
 - `GET /health` - Server health check
 
-### Development (DEV only - not available in production)
-- `POST /dev/reset-account` - Reset user account to starting state (requires authentication)
-  - Resets coins to 100
-  - Clears inventory
-  - Deletes all buildings and re-adds starting buildings (well, lumberjack, sandgrube)
-  - Cancels all active production jobs
-  - Cancels all market listings and returns resources to inventory
-  - **Only available when NODE_ENV != 'production'**
+**Development (DEV only):**
+- `POST /dev/reset-account` - Reset account to starting state (requires auth, only when NODE_ENV != 'production')
 
 ## Authentication
 
@@ -89,11 +90,23 @@ Authorization: Bearer <token>
 
 ## Architecture
 
-- **Express.js** - Web framework
-- **PostgreSQL** - Database
-- **JWT** - Authentication
-- **bcrypt** - Password hashing
-- **Zod** - Input validation
+- **Express.js** - Web framework with REST API
+- **PostgreSQL** - Relational database with BigInt support
+- **JWT** - Stateless authentication tokens
+- **bcrypt** - Password hashing (12 rounds)
+- **Zod** - Schema validation for all inputs
+- **express-rate-limit** - Rate limiting (100 req/15min general, 5 req/15min auth)
+- **cors** - Cross-Origin Resource Sharing
+
+### Security Features
+- Parameterized SQL queries (SQL injection prevention)
+- Input validation with Zod schemas
+- JWT token authentication
+- bcrypt password hashing
+- Rate limiting on all endpoints
+- CORS configuration
+- Transaction-based operations with ROLLBACK on errors
+- FOR UPDATE locks to prevent race conditions
 
 ## Game Mechanics
 

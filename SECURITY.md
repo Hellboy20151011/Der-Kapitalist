@@ -62,24 +62,18 @@
 - [x] Environment-Check (nur wenn NODE_ENV != 'production')
 - [x] Authentication erforderlich für alle Dev-Endpoints
 - [x] Scope-Beschränkung (nur eigener Account betroffen)
-- [ ] ⚠️ Rate Limiting fehlt (akzeptabel für DEV, wichtig für Produktion falls aktiviert)
+- [x] ✅ Rate Limiting implementiert (express-rate-limit)
 
 ### ⚠️ Empfehlungen für Produktion
 
 #### Kritisch (vor Produktions-Deployment)
-- [ ] **Rate Limiting** implementieren
-  - Express-rate-limit für alle Endpoints
-  - Separate Limits für Login/Register
-  - Empfehlung: 5 Versuche pro Minute für Auth
+- [x] **Rate Limiting** implementiert ✅
+  - Express-rate-limit für alle Endpoints (100 requests/15min)
+  - Separate Limits für Login/Register (5 attempts/15min)
   
-- [ ] **CORS richtig konfigurieren**
-  ```javascript
-  const cors = require('cors');
-  app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(','),
-    credentials: true
-  }));
-  ```
+- [x] **CORS richtig konfiguriert** ✅
+  - CORS Middleware implementiert
+  - Konfigurierbar via ALLOWED_ORIGINS environment variable
 
 - [ ] **Helmet.js für Security Headers**
   ```javascript

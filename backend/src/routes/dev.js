@@ -52,9 +52,16 @@ devRouter.post('/reset-account', authRequired, async (req, res) => {
       );
     }
 
-    // Cancel all active productions
+    // Cancel all active productions from production_queue
     await client.query(
-      `DELETE FROM production_jobs WHERE user_id = $1`,
+      `DELETE FROM production_queue WHERE user_id = $1`,
+      [userId]
+    );
+    
+    // Reset building production state
+    await client.query(
+      `UPDATE buildings SET is_producing = false, ready_at = NULL, producing_qty = NULL
+       WHERE user_id = $1`,
       [userId]
     );
 

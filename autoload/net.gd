@@ -1,6 +1,19 @@
 extends Node
 class_name Net
 
+## @deprecated Use Api.gd instead
+## This file is kept for backwards compatibility during migration.
+## New code should use the Api autoload instead, which provides:
+## - Type-safe method signatures
+## - Better documentation
+## - Integration with GameState
+## - Configurable base URL
+##
+## Migration: Replace Net.post_json/get_json calls with Api methods
+## Example: Net.post_json("/auth/login", data) -> Api.login(email, password)
+##
+## TODO: Remove this file once all references are migrated to Api.gd
+
 var base_url := "http://localhost:3000"
 var token: String = ""
 
