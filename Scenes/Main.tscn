@@ -107,6 +107,17 @@ custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 text = "❓"
 
+[node name="MarketButton" type="Button" parent="VBoxMain/HeaderBar/HeaderContent/HBox/RightButtons"]
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+text = "🏪"
+
+[node name="DevResetButton" type="Button" parent="VBoxMain/HeaderBar/HeaderContent/HBox/RightButtons"]
+visible = false
+custom_minimum_size = Vector2(80, 40)
+layout_mode = 2
+text = "DEV Reset"
+
 [node name="GameArea" type="Control" parent="VBoxMain"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -293,6 +304,211 @@ text = "P3"
 [node name="CloseButton" type="Button" parent="VBoxMain/GameArea/BuildingInfoDialog/DialogMargin/DialogVBox"]
 layout_mode = 2
 text = "Schließen"
+
+[node name="MarketPanel" type="PanelContainer" parent="VBoxMain/GameArea"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -400.0
+offset_right = 400.0
+offset_bottom = 400.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarketBg" type="ColorRect" parent="VBoxMain/GameArea/MarketPanel"]
+layout_mode = 2
+color = Color(0.95, 0.95, 0.95, 0.98)
+
+[node name="MarketMargin" type="MarginContainer" parent="VBoxMain/GameArea/MarketPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="MarketVBox" type="VBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "🏪 Marktplatz"
+horizontal_alignment = 1
+
+[node name="TabContainer" type="TabContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Kaufen" type="VBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FilterHBox" type="HBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FilterLabel" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/FilterHBox"]
+layout_mode = 2
+text = "Filter:"
+
+[node name="ResourceFilter" type="OptionButton" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/FilterHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Alle"
+item_count = 4
+selected = 0
+popup/item_0/text = "Alle"
+popup/item_0/id = 0
+popup/item_1/text = "Wasser"
+popup/item_1/id = 1
+popup/item_2/text = "Holz"
+popup/item_2/id = 2
+popup/item_3/text = "Stein"
+popup/item_3/id = 3
+
+[node name="RefreshButton" type="Button" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/FilterHBox"]
+layout_mode = 2
+text = "🔄 Aktualisieren"
+
+[node name="ListingsScroll" type="ScrollContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ListingsContainer" type="VBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/ListingsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Verkaufen" type="VBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CreateListingLabel" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+text = "Neues Angebot erstellen"
+horizontal_alignment = 1
+
+[node name="ResourceTypeHBox" type="HBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/ResourceTypeHBox"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Ressource:"
+
+[node name="ResourceTypeOption" type="OptionButton" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/ResourceTypeHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Wasser"
+item_count = 3
+selected = 0
+popup/item_0/text = "Wasser"
+popup/item_0/id = 0
+popup/item_1/text = "Holz"
+popup/item_1/id = 1
+popup/item_2/text = "Stein"
+popup/item_2/id = 2
+
+[node name="QuantityHBox" type="HBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/QuantityHBox"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Menge:"
+
+[node name="QuantityInput" type="SpinBox" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/QuantityHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 1e+06
+value = 10.0
+
+[node name="PriceHBox" type="HBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/PriceHBox"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Preis pro Einheit:"
+
+[node name="PriceInput" type="SpinBox" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/PriceHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 1e+09
+value = 100.0
+
+[node name="FeeLabel" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+text = "Marktgebühr: 7% (wird vom Verkaufspreis abgezogen)"
+horizontal_alignment = 1
+
+[node name="CreateButton" type="Button" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+text = "Angebot erstellen"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+
+[node name="MyListingsLabel" type="Label" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+text = "Meine aktiven Angebote"
+horizontal_alignment = 1
+
+[node name="MyListingsScroll" type="ScrollContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MyListingsContainer" type="VBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/MyListingsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="CloseButton" type="Button" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox"]
+layout_mode = 2
+text = "Schließen"
+
+[node name="LoadingSpinner" type="PanelContainer" parent="VBoxMain/GameArea"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -50.0
+offset_right = 150.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SpinnerBg" type="ColorRect" parent="VBoxMain/GameArea/LoadingSpinner"]
+layout_mode = 2
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="SpinnerVBox" type="VBoxContainer" parent="VBoxMain/GameArea/LoadingSpinner"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="SpinnerLabel" type="Label" parent="VBoxMain/GameArea/LoadingSpinner/SpinnerVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "⏳ Bitte warten..."
+horizontal_alignment = 1
 
 [node name="BottomPanel" type="PanelContainer" parent="VBoxMain"]
 custom_minimum_size = Vector2(0, 80)

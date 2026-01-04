@@ -1,5 +1,8 @@
 extends Control
 
+# Dev mode - set to true to show dev features (reset button)
+const DEV_MODE = OS.is_debug_build()
+
 # New UI references
 @onready var company_label: Label = $VBoxMain/HeaderBar/HeaderContent/HBox/LeftInfo/CompanyLabel
 @onready var stats_line1: Label = $VBoxMain/HeaderBar/HeaderContent/HBox/LeftInfo/StatsLine1
@@ -10,6 +13,8 @@ extends Control
 @onready var buildings_btn: Button = $VBoxMain/HeaderBar/HeaderContent/HBox/RightButtons/BuildingsButton
 @onready var production_btn: Button = $VBoxMain/HeaderBar/HeaderContent/HBox/RightButtons/ProductionButton
 @onready var help_btn: Button = $VBoxMain/HeaderBar/HeaderContent/HBox/RightButtons/HelpButton
+@onready var market_btn: Button = $VBoxMain/HeaderBar/HeaderContent/HBox/RightButtons/MarketButton
+@onready var dev_reset_btn: Button = $VBoxMain/HeaderBar/HeaderContent/HBox/RightButtons/DevResetButton
 
 @onready var building_selector: OptionButton = $VBoxMain/GameArea/BuildingSelector/SelectorMargin/BuildingOption
 @onready var building_info_dialog: PanelContainer = $VBoxMain/GameArea/BuildingInfoDialog
@@ -18,6 +23,21 @@ extends Control
 @onready var dialog_info: Label = $VBoxMain/GameArea/BuildingInfoDialog/DialogMargin/DialogVBox/InfoLabel
 @onready var dialog_action: Label = $VBoxMain/GameArea/BuildingInfoDialog/DialogMargin/DialogVBox/ActionLabel
 @onready var dialog_close_btn: Button = $VBoxMain/GameArea/BuildingInfoDialog/DialogMargin/DialogVBox/CloseButton
+
+# Market UI references
+@onready var market_panel: PanelContainer = $VBoxMain/GameArea/MarketPanel
+@onready var market_close_btn: Button = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/CloseButton
+@onready var resource_filter: OptionButton = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/FilterHBox/ResourceFilter
+@onready var refresh_btn: Button = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/FilterHBox/RefreshButton
+@onready var listings_container: VBoxContainer = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/ListingsScroll/ListingsContainer
+@onready var resource_type_option: OptionButton = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/ResourceTypeHBox/ResourceTypeOption
+@onready var quantity_input: SpinBox = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/QuantityHBox/QuantityInput
+@onready var price_input: SpinBox = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/PriceHBox/PriceInput
+@onready var create_listing_btn: Button = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/CreateButton
+@onready var my_listings_container: VBoxContainer = $VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen/MyListingsScroll/MyListingsContainer
+
+# Loading spinner
+@onready var loading_spinner: PanelContainer = $VBoxMain/GameArea/LoadingSpinner
 
 @onready var home_icon: Button = $VBoxMain/GameArea/BuildingIconBar/HomeIcon
 @onready var well_icon: Button = $VBoxMain/GameArea/BuildingIconBar/WellIcon
@@ -62,9 +82,15 @@ var poll_timer: Timer
 var has_well := false
 var has_lumberjack := false
 var has_sandgrube := false
+var is_loading := false
 
 func _ready() -> void:
 	status_label.text = ""
+	
+	# Dev mode setup
+	dev_reset_btn.visible = DEV_MODE
+	if DEV_MODE:
+		dev_reset_btn.pressed.connect(_dev_reset_account)
 	
 	# New UI connections
 	logout_btn.pressed.connect(_logout)
@@ -72,6 +98,13 @@ func _ready() -> void:
 	buildings_btn.pressed.connect(_show_buildings_panel)
 	production_btn.pressed.connect(_show_production_panel)
 	help_btn.pressed.connect(_show_help)
+	market_btn.pressed.connect(_show_market)
+	
+	# Market panel connections
+	market_close_btn.pressed.connect(_close_market)
+	refresh_btn.pressed.connect(_refresh_market_listings)
+	resource_filter.item_selected.connect(func(_idx): _refresh_market_listings())
+	create_listing_btn.pressed.connect(_create_market_listing)
 	
 	building_selector.item_selected.connect(_on_building_selected)
 	dialog_close_btn.pressed.connect(_close_dialog)
@@ -114,9 +147,6 @@ func _ready() -> void:
 	# Direkt nach Start syncen
 	await _sync_state()
 
-func _set_status(msg: String) -> void:
-	status_label.text = msg
-
 # New UI handlers
 func _show_stats() -> void:
 	_set_status("Statistiken anzeigen")
@@ -134,6 +164,208 @@ func _show_production_panel() -> void:
 func _show_help() -> void:
 	_set_status("Hilfe anzeigen")
 	# TODO: Implement help dialog
+
+func _show_market() -> void:
+	_set_status("Marktplatz öffnen")
+	market_panel.visible = true
+	_refresh_market_listings()
+
+func _close_market() -> void:
+	market_panel.visible = false
+
+func _refresh_market_listings() -> void:
+	if is_loading:
+		return
+	
+	_show_loading(true)
+	_disable_buttons(true)
+	
+	# Get selected resource filter
+	var filter_idx = resource_filter.selected
+	var resource_type = ""
+	if filter_idx == 1:
+		resource_type = "water"
+	elif filter_idx == 2:
+		resource_type = "wood"
+	elif filter_idx == 3:
+		resource_type = "stone"
+	
+	var path = "/market/listings"
+	if resource_type != "":
+		path += "?resource_type=" + resource_type
+	
+	var res := await Net.get_json(path)
+	
+	_show_loading(false)
+	_disable_buttons(false)
+	
+	if not res.ok:
+		_set_status("❌ Fehler beim Laden: " + _error_string(res), true)
+		return
+	
+	# Clear existing listings
+	for child in listings_container.get_children():
+		child.queue_free()
+	
+	var listings = res.data.get("listings", [])
+	if listings.size() == 0:
+		var label = Label.new()
+		label.text = "Keine Angebote verfügbar"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		listings_container.add_child(label)
+		_set_status("✓ Keine Angebote gefunden", true)
+	else:
+		for listing in listings:
+			_add_listing_item(listing)
+		_set_status("✓ %d Angebote geladen" % listings.size(), true)
+
+func _add_listing_item(listing: Dictionary) -> void:
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 80)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 5)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 5)
+	panel.add_child(margin)
+	
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	margin.add_child(hbox)
+	
+	var info_vbox = VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(info_vbox)
+	
+	var resource_icon = {"water": "💧", "wood": "🪓", "stone": "🪨"}
+	var resource_name = {"water": "Wasser", "wood": "Holz", "stone": "Stein"}
+	var res_type = listing.get("resource_type", "")
+	
+	var title_label = Label.new()
+	title_label.text = "%s %s" % [resource_icon.get(res_type, "📦"), resource_name.get(res_type, res_type)]
+	title_label.add_theme_font_size_override("font_size", 16)
+	info_vbox.add_child(title_label)
+	
+	var qty_label = Label.new()
+	qty_label.text = "Menge: %s" % listing.get("quantity", "0")
+	info_vbox.add_child(qty_label)
+	
+	var price_label = Label.new()
+	var price_per_unit = int(listing.get("price_per_unit", "0"))
+	var quantity = int(listing.get("quantity", "0"))
+	var total = price_per_unit * quantity
+	price_label.text = "Preis: %d Coins/Stück (Gesamt: %d Coins)" % [price_per_unit, total]
+	info_vbox.add_child(price_label)
+	
+	var buy_btn = Button.new()
+	buy_btn.text = "Kaufen"
+	buy_btn.custom_minimum_size = Vector2(100, 60)
+	buy_btn.pressed.connect(func(): await _buy_listing(listing.get("id"), listing))
+	hbox.add_child(buy_btn)
+	
+	listings_container.add_child(panel)
+
+func _buy_listing(listing_id, listing: Dictionary) -> void:
+	if is_loading:
+		return
+	
+	_show_loading(true)
+	_disable_buttons(true)
+	
+	var res := await Net.post_json("/market/listings/%s/buy" % str(listing_id), {})
+	
+	_show_loading(false)
+	_disable_buttons(false)
+	
+	if not res.ok:
+		_set_status("❌ Kauf fehlgeschlagen: " + _error_string(res), true)
+		return
+	
+	_set_status("✓ Erfolgreich gekauft!", true)
+	await _sync_state()
+	_refresh_market_listings()
+
+func _create_market_listing() -> void:
+	if is_loading:
+		return
+	
+	_show_loading(true)
+	_disable_buttons(true)
+	
+	var resource_types = ["water", "wood", "stone"]
+	var resource_type = resource_types[resource_type_option.selected]
+	var quantity = int(quantity_input.value)
+	var price_per_unit = int(price_input.value)
+	
+	var body = {
+		"resource_type": resource_type,
+		"quantity": quantity,
+		"price_per_unit": price_per_unit
+	}
+	
+	var res := await Net.post_json("/market/listings", body)
+	
+	_show_loading(false)
+	_disable_buttons(false)
+	
+	if not res.ok:
+		_set_status("❌ Listing fehlgeschlagen: " + _error_string(res), true)
+		return
+	
+	_set_status("✓ Angebot erstellt!", true)
+	await _sync_state()
+
+# UX Improvement functions
+func _show_loading(show: bool) -> void:
+	is_loading = show
+	loading_spinner.visible = show
+
+func _disable_buttons(disable: bool) -> void:
+	# Disable header buttons
+	logout_btn.disabled = disable
+	stats_btn.disabled = disable
+	buildings_btn.disabled = disable
+	production_btn.disabled = disable
+	help_btn.disabled = disable
+	market_btn.disabled = disable
+	if DEV_MODE:
+		dev_reset_btn.disabled = disable
+	
+	# Disable market buttons
+	if market_panel.visible:
+		refresh_btn.disabled = disable
+		create_listing_btn.disabled = disable
+
+func _set_status(msg: String, is_result: bool = false) -> void:
+	status_label.text = msg
+	# Auto-clear result messages after 5 seconds
+	if is_result:
+		await get_tree().create_timer(5.0).timeout
+		if status_label.text == msg:
+			status_label.text = ""
+
+func _dev_reset_account() -> void:
+	if not DEV_MODE:
+		return
+	
+	if is_loading:
+		return
+	
+	_show_loading(true)
+	_disable_buttons(true)
+	
+	var res := await Net.post_json("/dev/reset-account", {})
+	
+	_show_loading(false)
+	_disable_buttons(false)
+	
+	if not res.ok:
+		_set_status("❌ Reset fehlgeschlagen: " + _error_string(res), true)
+		return
+	
+	_set_status("✓ Account zurückgesetzt!", true)
+	await _sync_state()
 
 func _on_building_selected(index: int) -> void:
 	_set_status("Gebäude ausgewählt: " + building_selector.get_item_text(index))
