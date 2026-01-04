@@ -119,17 +119,17 @@ func post_json(path: String, body: Dictionary, timeout: float = 30.0) -> Diction
 	var timer := get_tree().create_timer(timeout)
 	var timed_out := false
 	
+	# Timeout-Handler (vor Request registrieren!)
+	timer.timeout.connect(func():
+		timed_out = true
+		http.cancel_request()
+	)
+	
 	# Request senden
 	var err := http.request(base_url + path, _headers(), HTTPClient.METHOD_POST, JSON.stringify(body))
 	if err != OK:
 		http.queue_free()
 		return {"ok": false, "error": "request_failed", "details": "Anfrage konnte nicht gesendet werden"}
-	
-	# Timeout-Handler
-	timer.timeout.connect(func():
-		timed_out = true
-		http.cancel_request()
-	)
 	
 	# Warte auf Response
 	var result = await http.request_completed
@@ -167,17 +167,17 @@ func get_json(path: String, timeout: float = 30.0) -> Dictionary:
 	var timer := get_tree().create_timer(timeout)
 	var timed_out := false
 	
+	# Timeout-Handler (vor Request registrieren!)
+	timer.timeout.connect(func():
+		timed_out = true
+		http.cancel_request()
+	)
+	
 	# Request senden
 	var err := http.request(base_url + path, _headers(), HTTPClient.METHOD_GET)
 	if err != OK:
 		http.queue_free()
 		return {"ok": false, "error": "request_failed", "details": "Anfrage konnte nicht gesendet werden"}
-	
-	# Timeout-Handler
-	timer.timeout.connect(func():
-		timed_out = true
-		http.cancel_request()
-	)
 	
 	# Warte auf Response
 	var result = await http.request_completed
