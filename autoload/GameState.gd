@@ -24,7 +24,7 @@ var buildings: Array = []
 var server_time: String = ""
 
 func reset() -> void:
-	"""Reset all state to defaults (e.g., on logout)"""
+	## Reset all state to defaults (e.g., on logout)
 	token = ""
 	player_id = -1
 	coins = 0
@@ -39,7 +39,7 @@ func reset() -> void:
 	server_time = ""
 
 func update_from_server(data: Dictionary) -> void:
-	"""Update state from server response"""
+	## Update state from server response
 	if data.has("coins"):
 		coins = int(str(data.get("coins", "0")))
 	
@@ -57,14 +57,14 @@ func update_from_server(data: Dictionary) -> void:
 		server_time = str(data.get("server_time", ""))
 
 func has_building(building_type: String) -> bool:
-	"""Check if player owns a specific building type"""
+	## Check if player owns a specific building type
 	for building in buildings:
 		if building.get("type", "") == building_type:
 			return true
 	return false
 
 func get_building(building_type: String) -> Dictionary:
-	"""Get building data for a specific type"""
+	## Get building data for a specific type
 	for building in buildings:
 		if building.get("type", "") == building_type:
 			return building

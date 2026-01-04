@@ -15,7 +15,7 @@ func update_resources(water: int, wood: int, stone: int, sand: int = 0) -> void:
 	stone_label.text = "🪨 %d" % stone
 
 func update_from_state() -> void:
-	"""Update UI from GameState"""
+	## Update UI from GameState
 	update_coins(GameState.coins)
 	update_resources(
 		GameState.inventory.get("water", 0),

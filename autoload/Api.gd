@@ -23,11 +23,11 @@ func _headers() -> PackedStringArray:
 # ============================================================================
 
 func login(email: String, password: String) -> Dictionary:
-	"""Login with email and password. Returns token on success."""
+	## Login with email and password. Returns token on success.
 	return await post_json("/auth/login", {"email": email, "password": password})
 
 func register(email: String, password: String) -> Dictionary:
-	"""Register new account with email and password. Returns token on success."""
+	## Register new account with email and password. Returns token on success.
 	return await post_json("/auth/register", {"email": email, "password": password})
 
 # ============================================================================
@@ -98,7 +98,7 @@ func dev_reset_account() -> Dictionary:
 # ============================================================================
 
 func post_json(path: String, body: Dictionary) -> Dictionary:
-	"""Make a POST request with JSON body"""
+	## Make a POST request with JSON body
 	var http := HTTPRequest.new()
 	add_child(http)
 	var err := http.request(base_url + path, _headers(), HTTPClient.METHOD_POST, JSON.stringify(body))
@@ -117,7 +117,7 @@ func post_json(path: String, body: Dictionary) -> Dictionary:
 	return {"ok": code >= 200 and code < 300, "code": code, "data": data}
 
 func get_json(path: String) -> Dictionary:
-	"""Make a GET request"""
+	## Make a GET request
 	var http := HTTPRequest.new()
 	add_child(http)
 	var err := http.request(base_url + path, _headers(), HTTPClient.METHOD_GET)
