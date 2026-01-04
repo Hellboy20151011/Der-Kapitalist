@@ -16,6 +16,10 @@ jobs:
   lint-and-check:
     runs-on: ubuntu-latest
     
+    # Explicitly set minimal permissions for security
+    permissions:
+      contents: read
+    
     steps:
     - uses: actions/checkout@v4
     
