@@ -93,8 +93,9 @@ productionRouter.post('/start', authRequired, async (req, res) => {
       cost: totalCost.toString(),
       ready_at: readyAtRes.rows[0].ready_at
     });
-  } catch {
+  } catch (err) {
     await client.query('ROLLBACK');
+    console.error('Production start error:', err);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
@@ -168,8 +169,9 @@ productionRouter.post('/collect', authRequired, async (req, res) => {
 
     await client.query('COMMIT');
     return res.json({ ok: true, building_type, quantity: qty.toString(), resource: cfg.resource });
-  } catch {
+  } catch (err) {
     await client.query('ROLLBACK');
+    console.error('Production collect error:', err);
     return res.status(500).json({ error: 'server_error' });
   } finally {
     client.release();
