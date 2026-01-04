@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqmx7v8n5pqwe"]
+
+[ext_resource type="Script" path="res://Scenes/UI/WalletBar.gd" id="1_1"]
+
+[node name="WalletBar" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+theme_override_constants/separation = 20
+script = ExtResource("1_1")
+
+[node name="CoinsLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "💰 0"
+vertical_alignment = 1
+
+[node name="WaterLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "💧 0"
+vertical_alignment = 1
+
+[node name="WoodLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🪓 0"
+vertical_alignment = 1
+
+[node name="StoneLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🪨 0"
+vertical_alignment = 1
