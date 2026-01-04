@@ -1,0 +1,1 @@
+status_label.text = (register ? "Registrierung fehlgeschlagen: " : "Login fehlgeschlagen: ") + msg
