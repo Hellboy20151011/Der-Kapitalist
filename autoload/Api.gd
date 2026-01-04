@@ -1,5 +1,6 @@
 extends Node
-# class_name Api
+# Note: This is an autoload and globally accessible as 'Api'
+# Do not use class_name with autoloads in Godot 4.5+
 
 # Base URL can be configured in project settings or overridden via environment
 # Default to localhost for development
