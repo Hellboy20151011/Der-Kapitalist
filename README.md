@@ -19,7 +19,8 @@ Ein Spiel wie Kapiland nur für Mobile Clients und als Lernprojekt.
   - **net.gd** - Legacy network layer (deprecated, use Api.gd)
 
 ### Documentation
-- **API.md** - Complete API endpoint documentation
+- **[API.md](API.md)** - Complete API endpoint documentation
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Architecture overview and implementation guide
 - **DB_Schema.md** - PostgreSQL Datenbankschema
 - **IMPLEMENTATION_SUMMARY.md** - Implementation details
 - **PRODUCTION_FLOW_DIAGRAM.md** - Production system flow
@@ -73,3 +74,49 @@ Der-Kapitalist ist ein Wirtschaftsspiel, bei dem Spieler:
 - Ressourcen gegen Münzen verkaufen
 - Mit anderen Spielern auf dem Marktplatz handeln
 - **KEINE automatische Idle-Produktion** - Gebäude produzieren nur wenn Jobs manuell gestartet werden
+
+## Quick Reference
+
+### For Developers
+
+**Running the project:**
+1. Start backend: `cd backend && npm start`
+2. Open project in Godot 4+
+3. Press F5 to run
+
+**Key files to know:**
+- `autoload/GameState.gd` - Global state (coins, inventory, buildings)
+- `autoload/Api.gd` - All API calls
+- `Scenes/Auth/Login.gd` - Login logic
+- `Scenes/Game/Main.gd` - Main game logic
+
+**Making API calls:**
+```gdscript
+# Login
+var result = await Api.login(email, password)
+
+# Get state
+var result = await Api.get_state()
+
+# Build building
+var result = await Api.build_building("well")
+```
+
+**Accessing state:**
+```gdscript
+# Get coins
+var coins = GameState.coins
+
+# Get inventory
+var water = GameState.inventory["water"]
+
+# Check building ownership
+if GameState.has_building("well"):
+    print("Has well!")
+```
+
+### For Further Reading
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Complete architecture guide
+- [API.md](API.md) - API endpoint reference
+- [REVIEW.md](REVIEW.md) - Code review that led to these improvements
+
