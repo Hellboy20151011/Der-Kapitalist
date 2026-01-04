@@ -8,6 +8,11 @@ export const devRouter = express.Router();
 const isDev = process.env.NODE_ENV !== 'production';
 
 // Reset account endpoint - DEV only
+// NOTE: This endpoint is not rate-limited as it's:
+// 1. Only available in development (NODE_ENV check)
+// 2. Requires authentication
+// 3. Only affects the authenticated user's own account
+// Rate limiting should be added if this endpoint is ever enabled in production
 devRouter.post('/reset-account', authRequired, async (req, res) => {
   if (!isDev) {
     return res.status(403).json({ error: 'dev_only_endpoint' });

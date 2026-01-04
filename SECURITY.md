@@ -58,6 +58,12 @@
 - [x] Input-Validierung (Quantity max 1000)
 - [x] Zeitbasierte Produktions-Mechanik
 
+#### Dev/Admin-Endpoints
+- [x] Environment-Check (nur wenn NODE_ENV != 'production')
+- [x] Authentication erforderlich für alle Dev-Endpoints
+- [x] Scope-Beschränkung (nur eigener Account betroffen)
+- [ ] ⚠️ Rate Limiting fehlt (akzeptabel für DEV, wichtig für Produktion falls aktiviert)
+
 ### ⚠️ Empfehlungen für Produktion
 
 #### Kritisch (vor Produktions-Deployment)
