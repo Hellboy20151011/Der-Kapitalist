@@ -1,0 +1,53 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  lint-and-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./backend
+      run: npm ci
+    
+    - name: Check for syntax errors
+      working-directory: ./backend
+      run: node --check src/**/*.js src/*.js
+    
+    - name: Verify migrations exist
+      run: |
+        test -f backend/migrations/001_initial_schema.sql
+        test -f backend/migrations/002_add_building_production_columns.sql
+        test -f backend/migrations/003_add_performance_indices.sql
+        echo "✓ All migrations found"
+    
+    - name: Check for TODO/FIXME
+      run: |
+        echo "Checking for critical TODOs..."
+        grep -r "TODO.*CRITICAL" backend/src/ && exit 1 || echo "✓ No critical TODOs"
+        grep -r "FIXME" backend/src/ && echo "⚠ FIXMEs found (non-blocking)" || echo "✓ No FIXMEs"
+    
+    # Future: Add actual tests when test suite exists
+    # - name: Run tests
+    #   working-directory: ./backend
+    #   run: npm test

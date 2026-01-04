@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { config } from './config.js';
 import { authRouter } from './routes/auth.js';
 import { stateRouter } from './routes/state.js';
@@ -24,13 +25,36 @@ export function createApp() {
   
   app.use(express.json());
 
+  // Rate Limiting Configuration
+  // General rate limit for all endpoints
+  const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'too_many_requests', message: 'Too many requests, please try again later.' }
+  });
+
+  // Stricter rate limit for authentication endpoints
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 login/register attempts per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'too_many_auth_attempts', message: 'Too many authentication attempts, please try again later.' }
+  });
+
+  // Apply general rate limiter to all routes
+  app.use(generalLimiter);
+
   app.get('/health', (_, res) => res.json({ 
     ok: true, 
     timestamp: new Date().toISOString(),
     version: '1.0.0'
   }));
 
-  app.use('/auth', authRouter);
+  // Apply stricter rate limiter to auth routes
+  app.use('/auth', authLimiter, authRouter);
   app.use('/state', stateRouter);
   app.use('/economy', economyRouter);
   app.use('/market', marketRouter);

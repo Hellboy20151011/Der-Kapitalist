@@ -238,6 +238,15 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
     client.release();
   }
 });
+// ============================================================================
+// PRODUCTION SYSTEM (Alternative Implementation - Currently Not Used)
+// ============================================================================
+// NOTE: This is an alternative production system using production_queue table.
+// The frontend currently uses /production/* endpoints (production.js) instead.
+// This implementation uses production_queue for multi-job queuing.
+// See KNOWN_ISSUES.md for details on the production system duplication.
+// ============================================================================
+
 // Production mechanics:
 // - Well: 1 coin → 1 water in 3 seconds
 // - Lumberjack: 1 coin + 1 water → 10 wood in 5 seconds

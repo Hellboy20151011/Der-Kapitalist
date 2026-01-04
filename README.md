@@ -16,7 +16,6 @@ Ein Spiel wie Kapiland nur für Mobile Clients und als Lernprojekt.
 - **autoload/** - Godot Autoload-Skripte
   - **GameState.gd** - Global game state management
   - **Api.gd** - API communication layer
-  - **net.gd** - Legacy network layer (deprecated, use Api.gd)
 
 ### Documentation
 - **[API.md](API.md)** - Complete API endpoint documentation
