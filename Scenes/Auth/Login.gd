@@ -38,7 +38,11 @@ func _auth(register: bool) -> void:
 	_set_busy(true)
 	status_label.text = "Bitte warten..."
 
-	var res := await Api.register(email, password) if register else await Api.login(email, password)
+	var res: Dictionary
+	if register:
+		res = await Api.register(email, password)
+	else:
+		res = await Api.login(email, password)
 
 	if not res.ok:
 		var msg := "Fehler"
@@ -47,7 +51,7 @@ func _auth(register: bool) -> void:
 			msg = str(res.details)
 		elif typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
 			msg = str(res.data.error)
-		status_label.text = (register ? "Registrierung fehlgeschlagen: " : "Login fehlgeschlagen: ") + msg
+		status_label.text = ("Registrierung fehlgeschlagen: " if register else "Login fehlgeschlagen: ") + msg
 		_set_busy(false)
 		return
 
