@@ -38,8 +38,7 @@ func _auth(register: bool) -> void:
 	_set_busy(true)
 	status_label.text = "Bitte warten..."
 
-	var endpoint := "/auth/register" if register else "/auth/login"
-	var res := await Net.post_json(endpoint, {"email": email, "password": password})
+	var res := await Api.register(email, password) if register else await Api.login(email, password)
 
 	if not res.ok:
 		var msg := "Fehler"
@@ -54,8 +53,8 @@ func _auth(register: bool) -> void:
 		_set_busy(false)
 		return
 
-	Net.token = str(res.data.token)
+	GameState.token = str(res.data.token)
 	status_label.text = "Erfolgreich."
 
 	# Wechsel zur Main Szene
-	get_tree().change_scene_to_file("res://Scenes/Main.tscn")
+	get_tree().change_scene_to_file("res://Scenes/Game/Main.tscn")

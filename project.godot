@@ -11,12 +11,14 @@ config_version=5
 [application]
 
 config/name="Der-Kapitalist"
-run/main_scene="res://Scenes/Login.tscn"
+run/main_scene="res://Scenes/Auth/Login.tscn"
 config/features=PackedStringArray("4.2", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
+GameState="*res://autoload/GameState.gd"
+Api="*res://autoload/Api.gd"
 Net="*res://autoload/net.gd"
 
 [display]

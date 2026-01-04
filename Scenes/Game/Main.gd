@@ -214,11 +214,7 @@ func _refresh_market_listings() -> void:
 	elif filter_idx == 4:
 		resource_type = "sand"
 	
-	var path = "/market/listings"
-	if resource_type != "":
-		path += "?resource_type=" + resource_type
-	
-	var res := await Net.get_json(path)
+	var res := await Api.get_market_listings(resource_type)
 	
 	_show_loading(false)
 	_disable_buttons(false)
@@ -295,7 +291,7 @@ func _buy_listing(listing_id, listing: Dictionary) -> void:
 	_show_loading(true)
 	_disable_buttons(true)
 	
-	var res := await Net.post_json("/market/listings/%s/buy" % str(listing_id), {})
+	var res := await Api.buy_listing(listing_id)
 	
 	_show_loading(false)
 	_disable_buttons(false)
@@ -319,13 +315,7 @@ func _create_market_listing() -> void:
 	var quantity = int(quantity_input.value)
 	var price_per_unit = int(price_input.value)
 	
-	var body = {
-		"resource_type": resource_type,
-		"quantity": quantity,
-		"price_per_unit": price_per_unit
-	}
-	
-	var res := await Net.post_json("/market/listings", body)
+	var res := await Api.create_market_listing(resource_type, quantity, price_per_unit)
 	
 	_show_loading(false)
 	_disable_buttons(false)
@@ -376,7 +366,7 @@ func _dev_reset_account() -> void:
 	_show_loading(true)
 	_disable_buttons(true)
 	
-	var res := await Net.post_json("/dev/reset-account", {})
+	var res := await Api.dev_reset_account()
 	
 	_show_loading(false)
 	_disable_buttons(false)
@@ -427,16 +417,19 @@ func _show_building_dialog(title: String, desc: String, resource_type: String) -
 	building_info_dialog.visible = true
 
 func _sync_state() -> void:
-	if Net.token == "":
+	if GameState.token == "":
 		_set_status("Nicht eingeloggt.")
 		return
 
-	var res := await Net.get_json("/state")
+	var res := await Api.get_state()
 	if not res.ok:
 		_set_status("Sync Fehler: %s" % _error_string(res))
 		return
 
 	var s = res.data
+	# Update GameState
+	GameState.update_from_server(s)
+	
 	# Backend liefert coins/inventory als String (BigInt-safe)
 	var coins = str(s.get("coins", "0"))
 	coins_label.text = "Coins: %s" % coins
@@ -501,22 +494,22 @@ func _sync_state() -> void:
 	_set_status("Sync ok (%s)" % str(s.get("server_time", "")))
 
 func _upgrade(building_type: String) -> void:
-	var res := await Net.post_json("/economy/buildings/upgrade", {"building_type": building_type})
+	var res := await Api.upgrade_building(building_type)
 	if not res.ok:
 		_set_status("Upgrade fehlgeschlagen: %s" % _error_string(res))
 		return
 	await _sync_state()
 
 func _sell(resource_type: String, qty: int) -> void:
-	var res := await Net.post_json("/economy/sell", {"resource_type": resource_type, "quantity": qty})
+	var res := await Api.sell_resource(resource_type, qty)
 	if not res.ok:
 		_set_status("Verkauf fehlgeschlagen: %s" % _error_string(res))
 		return
 	await _sync_state()
 
 func _logout() -> void:
-	Net.token = ""
-	get_tree().change_scene_to_file("res://Scenes/Login.tscn")
+	GameState.reset()
+	get_tree().change_scene_to_file("res://Scenes/Auth/Login.tscn")
 
 func _error_string(res: Dictionary) -> String:
 	if res.has("data") and typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
@@ -526,7 +519,7 @@ func _error_string(res: Dictionary) -> String:
 	return "unbekannt"
 
 func _update_slider_max(slider: HSlider, building_type: String, has_building: bool, is_producing: bool) -> void:
-	"""Helper function to update slider max value based on available coins and building state"""
+	## Helper function to update slider max value based on available coins and building state
 	if not has_building:
 		return
 	
@@ -612,7 +605,7 @@ func _update_building_ui() -> void:
 		stone_produce_btn.disabled = not has_sandgrube or current_coins < stone_cost
 
 func _build(building_type: String) -> void:
-	var res := await Net.post_json("/economy/buildings/build", {"building_type": building_type})
+	var res := await Api.build_building(building_type)
 	if not res.ok:
 		_set_status("Bau fehlgeschlagen: %s" % _error_string(res))
 		return
@@ -626,7 +619,7 @@ func _produce(building_type: String, quantity: int) -> void:
 		_set_status("Bitte Menge auswählen")
 		return
 	
-	var res := await Net.post_json("/production/start", {"building_type": building_type, "quantity": quantity})
+	var res := await Api.start_production(building_type, quantity)
 	if not res.ok:
 		_set_status("Produktion fehlgeschlagen: %s" % _error_string(res))
 		return
@@ -634,7 +627,7 @@ func _produce(building_type: String, quantity: int) -> void:
 	await _sync_state()
 
 func _poll_production() -> void:
-	if Net.token == "":
+	if GameState.token == "":
 		return
 	
 	# Check if any building is producing
