@@ -8,14 +8,17 @@ export const productionRouter = express.Router();
 /**
  * Konfiguration (MVP)
  * well: 1 water / 3s / 1 coin
+ * lumberjack: 1 wood / 5s / 2 coins
+ * sandgrube: 1 stone / 7s / 3 coins
  */
 const CONFIG = {
   well: { resource: 'water', seconds_per_unit: 3, coin_cost_per_unit: 1n },
-  // später: lumberjack, stonemason ...
+  lumberjack: { resource: 'wood', seconds_per_unit: 5, coin_cost_per_unit: 2n },
+  sandgrube: { resource: 'stone', seconds_per_unit: 7, coin_cost_per_unit: 3n }
 };
 
 const startSchema = z.object({
-  building_type: z.enum(['well']), // später erweitern
+  building_type: z.enum(['well', 'lumberjack', 'sandgrube']),
   quantity: z.number().int().positive().max(1_000_000)
 });
 
@@ -103,7 +106,7 @@ productionRouter.post('/start', authRequired, async (req, res) => {
 });
 
 const collectSchema = z.object({
-  building_type: z.enum(['well'])
+  building_type: z.enum(['well', 'lumberjack', 'sandgrube'])
 });
 
 productionRouter.post('/collect', authRequired, async (req, res) => {

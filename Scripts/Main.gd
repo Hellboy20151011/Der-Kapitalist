@@ -459,15 +459,15 @@ func _sync_state() -> void:
 		if b.type == "well":
 			has_well = true
 			well_producing = b.get("is_producing", false)
-			well_ready_at = b.get("ready_at", null)
+			well_ready_at = b.get("ready_at_unix", null)
 		elif b.type == "lumberjack":
 			has_lumberjack = true
 			lumber_producing = b.get("is_producing", false)
-			lumber_ready_at = b.get("ready_at", null)
+			lumber_ready_at = b.get("ready_at_unix", null)
 		elif b.type == "sandgrube":
 			has_sandgrube = true
 			sandgrube_producing = b.get("is_producing", false)
-			sandgrube_ready_at = b.get("ready_at", null)
+			sandgrube_ready_at = b.get("ready_at_unix", null)
 	
 	# Update new UI stats
 	stats_line1.text = "Bargeld: %s €" % coins
@@ -480,6 +480,37 @@ func _sync_state() -> void:
 	water_value.text = water
 	wood_value.text = wood
 	stone_value.text = stone
+	
+	# Calculate slider max based on available coins
+	var coins_int = int(str(s.get("coins","0")))
+	
+	# Update slider maximums based on coins and production costs
+	if has_well:
+		var max_well = max(1, coins_int / 1)  # 1 coin per unit
+		well_slider.max_value = float(max_well)
+		if coins_int == 0:
+			well_slider.editable = false
+			well_slider.value = 1
+		elif not well_producing:
+			well_slider.value = min(well_slider.value, float(max_well))
+	
+	if has_lumberjack:
+		var max_lumber = max(1, coins_int / 2)  # 2 coins per unit
+		lumber_slider.max_value = float(max_lumber)
+		if coins_int == 0:
+			lumber_slider.editable = false
+			lumber_slider.value = 1
+		elif not lumber_producing:
+			lumber_slider.value = min(lumber_slider.value, float(max_lumber))
+	
+	if has_sandgrube:
+		var max_stone = max(1, coins_int / 3)  # 3 coins per unit
+		stone_slider.max_value = float(max_stone)
+		if coins_int == 0:
+			stone_slider.editable = false
+			stone_slider.value = 1
+		elif not sandgrube_producing:
+			stone_slider.value = min(stone_slider.value, float(max_stone))
 	
 	# Update UI based on owned buildings
 	_update_building_ui()
@@ -522,63 +553,69 @@ func _update_building_ui() -> void:
 	upgrade_lumber_btn.disabled = not has_lumberjack
 	upgrade_stone_btn.disabled = not has_sandgrube
 	
+	# Get current coins for checking affordability
+	var coins_int = int(str(coins_label.text.replace("Coins: ", "")))
+	
 	# Update production controls based on ownership and production status
 	# Well
-	well_slider.editable = has_well and not well_producing
+	well_slider.editable = has_well and not well_producing and coins_int > 0
 	if well_producing:
 		if well_ready_at:
-			var ready_time = _parse_iso_time(well_ready_at)
+			var ready_time = well_ready_at  # Already Unix timestamp
 			var now = Time.get_unix_time_from_system()
 			if ready_time > now:
 				well_produce_btn.text = "Produziert... (%ds)" % int(ready_time - now)
 				well_produce_btn.disabled = true
 			else:
-				well_produce_btn.text = "Abholen"
-				well_produce_btn.disabled = false
+				# Production finished - will be auto-collected on next sync
+				well_produce_btn.text = "Fertig"
+				well_produce_btn.disabled = true
 		else:
 			well_produce_btn.text = "Produziert..."
 			well_produce_btn.disabled = true
 	else:
-		well_produce_btn.text = "Produzieren"
-		well_produce_btn.disabled = not has_well
+		well_produce_btn.text = "Produzieren" if coins_int > 0 else "Nicht genug Coins"
+		well_produce_btn.disabled = not has_well or coins_int == 0
 	
 	# Lumberjack
-	lumber_slider.editable = has_lumberjack and not lumber_producing
+	lumber_slider.editable = has_lumberjack and not lumber_producing and coins_int >= 2
 	if lumber_producing:
 		if lumber_ready_at:
-			var ready_time = _parse_iso_time(lumber_ready_at)
+			var ready_time = lumber_ready_at  # Already Unix timestamp
 			var now = Time.get_unix_time_from_system()
 			if ready_time > now:
 				lumber_produce_btn.text = "Produziert... (%ds)" % int(ready_time - now)
 				lumber_produce_btn.disabled = true
 			else:
-				lumber_produce_btn.text = "Abholen"
-				lumber_produce_btn.disabled = false
+				# Production finished - will be auto-collected on next sync
+				lumber_produce_btn.text = "Fertig"
+				lumber_produce_btn.disabled = true
 		else:
 			lumber_produce_btn.text = "Produziert..."
 			lumber_produce_btn.disabled = true
 	else:
-		lumber_produce_btn.text = "Produzieren"
-		lumber_produce_btn.disabled = not has_lumberjack
+		lumber_produce_btn.text = "Produzieren" if coins_int >= 2 else "Nicht genug Coins"
+		lumber_produce_btn.disabled = not has_lumberjack or coins_int < 2
 	
 	# Sandgrube
-	stone_slider.editable = has_sandgrube and not sandgrube_producing
+	stone_slider.editable = has_sandgrube and not sandgrube_producing and coins_int >= 3
 	if sandgrube_producing:
 		if sandgrube_ready_at:
-			var ready_time = _parse_iso_time(sandgrube_ready_at)
+			var ready_time = sandgrube_ready_at  # Already Unix timestamp
 			var now = Time.get_unix_time_from_system()
 			if ready_time > now:
 				stone_produce_btn.text = "Produziert... (%ds)" % int(ready_time - now)
 				stone_produce_btn.disabled = true
 			else:
-				stone_produce_btn.text = "Abholen"
-				stone_produce_btn.disabled = false
+				# Production finished - will be auto-collected on next sync
+				stone_produce_btn.text = "Fertig"
+				stone_produce_btn.disabled = true
 		else:
 			stone_produce_btn.text = "Produziert..."
 			stone_produce_btn.disabled = true
 	else:
-		stone_produce_btn.text = "Produzieren"
-		stone_produce_btn.disabled = not has_sandgrube
+		stone_produce_btn.text = "Produzieren" if coins_int >= 3 else "Nicht genug Coins"
+		stone_produce_btn.disabled = not has_sandgrube or coins_int < 3
 
 func _build(building_type: String) -> void:
 	var res := await Net.post_json("/economy/buildings/build", {"building_type": building_type})
@@ -589,45 +626,18 @@ func _build(building_type: String) -> void:
 	await _sync_state()
 
 func _produce(building_type: String, quantity: int) -> void:
-	# Check if we should collect or start
-	var is_collecting = false
-	if building_type == "well" and well_producing:
-		is_collecting = true
-	elif building_type == "lumberjack" and lumber_producing:
-		is_collecting = true
-	elif building_type == "sandgrube" and sandgrube_producing:
-		is_collecting = true
+	# Production is now always a start action
+	# Collection happens automatically on the server
+	if quantity <= 0:
+		_set_status("Bitte Menge auswählen")
+		return
 	
-	if is_collecting:
-		# Collect
-		var res := await Net.post_json("/production/collect", {"building_type": building_type})
-		if not res.ok:
-			_set_status("Abholen fehlgeschlagen: %s" % _error_string(res))
-			return
-		_set_status("Erfolgreich abgeholt!")
-		await _sync_state()
-	else:
-		# Start production
-		if quantity <= 0:
-			_set_status("Bitte Menge auswählen")
-			return
-		
-		var res := await Net.post_json("/production/start", {"building_type": building_type, "quantity": quantity})
-		if not res.ok:
-			_set_status("Produktion fehlgeschlagen: %s" % _error_string(res))
-			return
-		_set_status("Produktion gestartet!")
-		await _sync_state()
-
-func _parse_iso_time(iso_string: String) -> float:
-	"""Parse ISO 8601 timestamp to Unix time"""
-	if iso_string == null or iso_string == "":
-		return 0.0
-	
-	# Remove 'Z' if present and parse
-	var cleaned = iso_string.replace("Z", "")
-	var unix_time = Time.get_unix_time_from_datetime_string(cleaned)
-	return unix_time
+	var res := await Net.post_json("/production/start", {"building_type": building_type, "quantity": quantity})
+	if not res.ok:
+		_set_status("Produktion fehlgeschlagen: %s" % _error_string(res))
+		return
+	_set_status("Produktion gestartet!")
+	await _sync_state()
 
 func _poll_production() -> void:
 	if Net.token == "":
