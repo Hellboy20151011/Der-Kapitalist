@@ -31,6 +31,7 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
@@ -92,6 +93,7 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
@@ -166,6 +168,7 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Check if building already exists
@@ -333,6 +336,7 @@ economyRouter.post('/production/start', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Check if building exists
@@ -435,6 +439,7 @@ economyRouter.get('/production/status', authRequired, async (req, res) => {
   const client = await pool.connect();
 
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Check for completed productions

@@ -312,7 +312,15 @@ func _create_market_listing() -> void:
 	_show_loading(true)
 	_disable_buttons(true)
 	
-	var resource_type = RESOURCE_TYPES[resource_type_option.selected]
+	# Validate array bounds before accessing
+	var selected_idx = resource_type_option.selected
+	if selected_idx < 0 or selected_idx >= RESOURCE_TYPES.size():
+		_set_status("❌ Ungültiger Ressourcentyp", true)
+		_show_loading(false)
+		_disable_buttons(false)
+		return
+	
+	var resource_type = RESOURCE_TYPES[selected_idx]
 	var quantity = int(quantity_input.value)
 	var price_per_unit = int(price_input.value)
 	
@@ -516,10 +524,18 @@ func _error_string(res: Dictionary) -> String:
 	# Check for new error details field (network errors, timeouts)
 	if res.has("details"):
 		return str(res.details)
-	if res.has("data") and typeof(res.data) == TYPE_DICTIONARY and res.data.has("error"):
-		return str(res.data.error)
+	if res.has("data") and typeof(res.data) == TYPE_DICTIONARY:
+		if res.data.has("error"):
+			var error = str(res.data.error)
+			# Add user-friendly message for rate limiting
+			if error == "too_many_requests" or error == "too_many_auth_attempts":
+				return "Zu viele Anfragen. Bitte warten und erneut versuchen."
+			return error
 	if res.has("code"):
-		return "HTTP %s" % str(res.code)
+		var code = res.code
+		if code == 429:
+			return "Zu viele Anfragen (Rate Limit erreicht)"
+		return "HTTP %s" % str(code)
 	return "unbekannt"
 
 func _update_slider_max(slider: HSlider, building_type: String, has_building: bool, is_producing: bool) -> void:

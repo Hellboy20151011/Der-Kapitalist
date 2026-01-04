@@ -32,9 +32,17 @@ productionRouter.post('/start', authRequired, async (req, res) => {
   const cfg = CONFIG[building_type];
   const qty = BigInt(quantity);
   const totalCost = qty * cfg.coin_cost_per_unit;
+  
+  // Validate cost doesn't overflow
+  const MAX_COINS = BigInt('9223372036854775807');
+  if (totalCost > MAX_COINS) {
+    return res.status(400).json({ error: 'production_cost_too_large' });
+  }
 
   const client = await pool.connect();
   try {
+    // Set statement timeout to prevent long-running transactions
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Gebäude locken
@@ -119,6 +127,8 @@ productionRouter.post('/collect', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    // Set statement timeout to prevent long-running transactions
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Gebäude locken

@@ -52,6 +52,7 @@ authRouter.post('/register', async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     const hash = await bcrypt.hash(password, 12);

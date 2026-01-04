@@ -14,7 +14,9 @@ const createSchema = z.object({
 
 marketRouter.get('/listings', authRequired, async (req, res) => {
   const resourceType = req.query.resource_type;
-  const limit = Math.min(Number(req.query.limit ?? 50), 200);
+  // Validate limit is a safe positive integer
+  const limitParam = Number(req.query.limit ?? 50);
+  const limit = Math.min(Math.max(1, Math.floor(limitParam)), 200);
 
   const params = [];
   let where = `WHERE status = 'active' AND expires_at > now()`;
@@ -57,6 +59,8 @@ marketRouter.post('/listings', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    // Set statement timeout to prevent long-running transactions (10 seconds)
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
@@ -134,6 +138,8 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    // Set statement timeout to prevent long-running transactions (10 seconds)
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
@@ -174,7 +180,15 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
     const qty = BigInt(listing.quantity);
     const pricePerUnit = BigInt(listing.price_per_unit);
 
+    // Check for potential overflow in multiplication
+    // Max safe BigInt is implementation-dependent, but we can validate against reasonable business limits
+    const MAX_COINS = BigInt('9223372036854775807'); // Max int64
     const total = qty * pricePerUnit;
+    
+    if (total > MAX_COINS) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'transaction_amount_too_large' });
+    }
     const feePercent = BigInt(listing.fee_percent);
     const fee = (total * feePercent) / 100n;
     const payout = total - fee;

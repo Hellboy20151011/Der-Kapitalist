@@ -16,6 +16,7 @@ stateRouter.get('/', authRequired, async (req, res) => {
   const client = await pool.connect();
 
   try {
+    await client.query('SET statement_timeout = 10000');
     await client.query('BEGIN');
 
     // Idle production removed: buildings no longer produce automatically over time
