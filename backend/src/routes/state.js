@@ -25,11 +25,6 @@ stateRouter.get('/', authRequired, async (req, res) => {
       [userId]
     );
 
-    const invRes = await client.query(
-      `SELECT resource_type, amount FROM inventory WHERE user_id = $1`,
-      [userId]
-    );
-
     const bRes = await client.query(
       `SELECT building_type, level, is_producing, ready_at, producing_qty FROM buildings WHERE user_id = $1 ORDER BY building_type FOR UPDATE`,
       [userId]
@@ -72,8 +67,8 @@ stateRouter.get('/', authRequired, async (req, res) => {
       }
     }
 
-    // Re-fetch inventory after auto-collect
-    const invRes2 = await client.query(
+    // Fetch inventory after auto-collect
+    const invRes = await client.query(
       `SELECT resource_type, amount FROM inventory WHERE user_id = $1`,
       [userId]
     );
@@ -81,7 +76,7 @@ stateRouter.get('/', authRequired, async (req, res) => {
     await client.query('COMMIT');
 
     const inventory = {};
-    for (const row of invRes2.rows) inventory[row.resource_type] = String(row.amount);
+    for (const row of invRes.rows) inventory[row.resource_type] = String(row.amount);
 
     return res.json({
       server_time: new Date().toISOString(),

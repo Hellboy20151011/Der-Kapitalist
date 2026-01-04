@@ -96,6 +96,7 @@ var has_well := false
 var has_lumberjack := false
 var has_sandgrube := false
 var is_loading := false
+var current_coins := 0  # Track coins to avoid parsing from UI
 
 # Production state tracking
 var well_producing := false
@@ -439,6 +440,7 @@ func _sync_state() -> void:
 	# Backend liefert coins/inventory als String (BigInt-safe)
 	var coins = str(s.get("coins", "0"))
 	coins_label.text = "Coins: %s" % coins
+	current_coins = int(coins)  # Store for use in UI updates
 	
 	# Update new UI stats
 	var inv = s.get("inventory", {})
@@ -488,27 +490,10 @@ func _sync_state() -> void:
 	wood_value.text = wood
 	stone_value.text = stone
 	
-	# Calculate slider max based on available coins
-	var coins_int = int(str(s.get("coins","0")))
-	
 	# Update slider maximums based on coins and production costs
-	if has_well:
-		var max_well = max(1, coins_int / PRODUCTION_COSTS["well"])
-		well_slider.max_value = float(max_well)
-		if not well_producing:
-			well_slider.value = min(well_slider.value, float(max_well))
-	
-	if has_lumberjack:
-		var max_lumber = max(1, coins_int / PRODUCTION_COSTS["lumberjack"])
-		lumber_slider.max_value = float(max_lumber)
-		if not lumber_producing:
-			lumber_slider.value = min(lumber_slider.value, float(max_lumber))
-	
-	if has_sandgrube:
-		var max_stone = max(1, coins_int / PRODUCTION_COSTS["sandgrube"])
-		stone_slider.max_value = float(max_stone)
-		if not sandgrube_producing:
-			stone_slider.value = min(stone_slider.value, float(max_stone))
+	_update_slider_max(well_slider, "well", has_well, well_producing)
+	_update_slider_max(lumber_slider, "lumberjack", has_lumberjack, lumber_producing)
+	_update_slider_max(stone_slider, "sandgrube", has_sandgrube, sandgrube_producing)
 	
 	# Update UI based on owned buildings
 	_update_building_ui()
@@ -540,6 +525,17 @@ func _error_string(res: Dictionary) -> String:
 		return "HTTP %s" % str(res.code)
 	return "unbekannt"
 
+func _update_slider_max(slider: HSlider, building_type: String, has_building: bool, is_producing: bool) -> void:
+	"""Helper function to update slider max value based on available coins"""
+	if not has_building:
+		return
+	
+	var cost = PRODUCTION_COSTS[building_type]
+	var max_qty = max(1, current_coins / cost)
+	slider.max_value = float(max_qty)
+	if not is_producing:
+		slider.value = min(slider.value, float(max_qty))
+
 func _update_building_ui() -> void:
 	# Enable/disable build buttons based on ownership
 	build_well_btn.disabled = has_well
@@ -551,13 +547,10 @@ func _update_building_ui() -> void:
 	upgrade_lumber_btn.disabled = not has_lumberjack
 	upgrade_stone_btn.disabled = not has_sandgrube
 	
-	# Get current coins for checking affordability
-	var coins_int = int(str(coins_label.text.replace("Coins: ", "")))
-	
 	# Update production controls based on ownership and production status
 	# Well
 	var well_cost = PRODUCTION_COSTS["well"]
-	well_slider.editable = has_well and not well_producing and coins_int >= well_cost
+	well_slider.editable = has_well and not well_producing and current_coins >= well_cost
 	if well_producing:
 		if well_ready_at:
 			var ready_time = well_ready_at  # Already Unix timestamp
@@ -573,12 +566,12 @@ func _update_building_ui() -> void:
 			well_produce_btn.text = "Produziert..."
 			well_produce_btn.disabled = true
 	else:
-		well_produce_btn.text = "Produzieren" if coins_int >= well_cost else "Nicht genug Coins"
-		well_produce_btn.disabled = not has_well or coins_int < well_cost
+		well_produce_btn.text = "Produzieren" if current_coins >= well_cost else "Nicht genug Coins"
+		well_produce_btn.disabled = not has_well or current_coins < well_cost
 	
 	# Lumberjack
 	var lumber_cost = PRODUCTION_COSTS["lumberjack"]
-	lumber_slider.editable = has_lumberjack and not lumber_producing and coins_int >= lumber_cost
+	lumber_slider.editable = has_lumberjack and not lumber_producing and current_coins >= lumber_cost
 	if lumber_producing:
 		if lumber_ready_at:
 			var ready_time = lumber_ready_at  # Already Unix timestamp
@@ -594,12 +587,12 @@ func _update_building_ui() -> void:
 			lumber_produce_btn.text = "Produziert..."
 			lumber_produce_btn.disabled = true
 	else:
-		lumber_produce_btn.text = "Produzieren" if coins_int >= lumber_cost else "Nicht genug Coins"
-		lumber_produce_btn.disabled = not has_lumberjack or coins_int < lumber_cost
+		lumber_produce_btn.text = "Produzieren" if current_coins >= lumber_cost else "Nicht genug Coins"
+		lumber_produce_btn.disabled = not has_lumberjack or current_coins < lumber_cost
 	
 	# Sandgrube
 	var stone_cost = PRODUCTION_COSTS["sandgrube"]
-	stone_slider.editable = has_sandgrube and not sandgrube_producing and coins_int >= stone_cost
+	stone_slider.editable = has_sandgrube and not sandgrube_producing and current_coins >= stone_cost
 	if sandgrube_producing:
 		if sandgrube_ready_at:
 			var ready_time = sandgrube_ready_at  # Already Unix timestamp
@@ -615,8 +608,8 @@ func _update_building_ui() -> void:
 			stone_produce_btn.text = "Produziert..."
 			stone_produce_btn.disabled = true
 	else:
-		stone_produce_btn.text = "Produzieren" if coins_int >= stone_cost else "Nicht genug Coins"
-		stone_produce_btn.disabled = not has_sandgrube or coins_int < stone_cost
+		stone_produce_btn.text = "Produzieren" if current_coins >= stone_cost else "Nicht genug Coins"
+		stone_produce_btn.disabled = not has_sandgrube or current_coins < stone_cost
 
 func _build(building_type: String) -> void:
 	var res := await Net.post_json("/economy/buildings/build", {"building_type": building_type})
