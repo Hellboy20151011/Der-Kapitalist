@@ -35,7 +35,7 @@ func register(email: String, password: String) -> Dictionary:
 # ============================================================================
 
 func get_state() -> Dictionary:
-	"""Get current player state (coins, inventory, buildings, etc.)"""
+	## Get current player state (coins, inventory, buildings, etc.)
 	return await get_json("/state")
 
 # ============================================================================
@@ -43,15 +43,15 @@ func get_state() -> Dictionary:
 # ============================================================================
 
 func build_building(building_type: String) -> Dictionary:
-	"""Build a new building of the specified type"""
+	## Build a new building of the specified type
 	return await post_json("/economy/buildings/build", {"building_type": building_type})
 
 func upgrade_building(building_type: String) -> Dictionary:
-	"""Upgrade an existing building"""
+	## Upgrade an existing building
 	return await post_json("/economy/buildings/upgrade", {"building_type": building_type})
 
 func sell_resource(resource_type: String, quantity: int) -> Dictionary:
-	"""Sell resources for coins"""
+	## Sell resources for coins
 	return await post_json("/economy/sell", {"resource_type": resource_type, "quantity": quantity})
 
 # ============================================================================
@@ -59,7 +59,7 @@ func sell_resource(resource_type: String, quantity: int) -> Dictionary:
 # ============================================================================
 
 func start_production(building_type: String, quantity: int) -> Dictionary:
-	"""Start production job for specified building and quantity"""
+	## Start production job for specified building and quantity
 	return await post_json("/production/start", {"building_type": building_type, "quantity": quantity})
 
 # ============================================================================
@@ -67,14 +67,14 @@ func start_production(building_type: String, quantity: int) -> Dictionary:
 # ============================================================================
 
 func get_market_listings(resource_type: String = "") -> Dictionary:
-	"""Get market listings, optionally filtered by resource type"""
+	## Get market listings, optionally filtered by resource type
 	var path = "/market/listings"
 	if resource_type != "":
 		path += "?resource_type=" + resource_type
 	return await get_json(path)
 
 func create_market_listing(resource_type: String, quantity: int, price_per_unit: int) -> Dictionary:
-	"""Create a new market listing"""
+	## Create a new market listing
 	return await post_json("/market/listings", {
 		"resource_type": resource_type,
 		"quantity": quantity,
@@ -82,7 +82,7 @@ func create_market_listing(resource_type: String, quantity: int, price_per_unit:
 	})
 
 func buy_listing(listing_id) -> Dictionary:
-	"""Buy a market listing"""
+	## Buy a market listing
 	return await post_json("/market/listings/%s/buy" % str(listing_id), {})
 
 # ============================================================================
@@ -90,7 +90,7 @@ func buy_listing(listing_id) -> Dictionary:
 # ============================================================================
 
 func dev_reset_account() -> Dictionary:
-	"""Reset account to initial state (dev only)"""
+	## Reset account to initial state (dev only)
 	return await post_json("/dev/reset-account", {})
 
 # ============================================================================

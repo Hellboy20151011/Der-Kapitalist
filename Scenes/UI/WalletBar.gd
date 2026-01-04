@@ -9,7 +9,7 @@ class_name WalletBar
 func update_coins(coins: int) -> void:
 	coins_label.text = "💰 %d" % coins
 
-func update_resources(water: int, wood: int, stone: int, sand: int = 0) -> void:
+func update_resources(water: int, wood: int, stone: int) -> void:
 	water_label.text = "💧 %d" % water
 	wood_label.text = "🪓 %d" % wood
 	stone_label.text = "🪨 %d" % stone
@@ -20,6 +20,5 @@ func update_from_state() -> void:
 	update_resources(
 		GameState.inventory.get("water", 0),
 		GameState.inventory.get("wood", 0),
-		GameState.inventory.get("stone", 0),
-		GameState.inventory.get("sand", 0)
+		GameState.inventory.get("stone", 0)
 	)
