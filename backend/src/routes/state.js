@@ -24,7 +24,7 @@ stateRouter.get('/', authRequired, async (req, res) => {
     );
 
     const bRes = await client.query(
-      `SELECT building_type, level FROM buildings WHERE user_id = $1 ORDER BY building_type`,
+      `SELECT building_type, level, is_producing, ready_at, producing_qty FROM buildings WHERE user_id = $1 ORDER BY building_type`,
       [userId]
     );
 
@@ -38,7 +38,13 @@ return res.json({
   coins: String(stateRes.rows[0].coins),
   last_tick_at: stateRes.rows[0].last_tick_at,
   inventory,
-  buildings: bRes.rows.map(r => ({ type: r.building_type, level: Number(r.level) }))
+  buildings: bRes.rows.map(r => ({
+    type: r.building_type,
+    level: Number(r.level),
+    is_producing: !!r.is_producing,
+    ready_at: r.ready_at,
+    producing_qty: r.producing_qty ? String(r.producing_qty) : null
+  }))
 });
   } catch (e) {
     await client.query('ROLLBACK');

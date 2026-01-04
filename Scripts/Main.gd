@@ -90,6 +90,14 @@ var has_lumberjack := false
 var has_sandgrube := false
 var is_loading := false
 
+# Production state tracking
+var well_producing := false
+var well_ready_at = null
+var lumber_producing := false
+var lumber_ready_at = null
+var sandgrube_producing := false
+var sandgrube_ready_at = null
+
 func _ready() -> void:
 	status_label.text = ""
 	
@@ -438,14 +446,28 @@ func _sync_state() -> void:
 	has_sandgrube = false
 	var building_count = 0
 	
+	# Reset production state
+	well_producing = false
+	well_ready_at = null
+	lumber_producing = false
+	lumber_ready_at = null
+	sandgrube_producing = false
+	sandgrube_ready_at = null
+	
 	for b in buildings:
 		building_count += 1
 		if b.type == "well":
 			has_well = true
+			well_producing = b.get("is_producing", false)
+			well_ready_at = b.get("ready_at", null)
 		elif b.type == "lumberjack":
 			has_lumberjack = true
+			lumber_producing = b.get("is_producing", false)
+			lumber_ready_at = b.get("ready_at", null)
 		elif b.type == "sandgrube":
 			has_sandgrube = true
+			sandgrube_producing = b.get("is_producing", false)
+			sandgrube_ready_at = b.get("ready_at", null)
 	
 	# Update new UI stats
 	stats_line1.text = "Bargeld: %s €" % coins
@@ -500,13 +522,63 @@ func _update_building_ui() -> void:
 	upgrade_lumber_btn.disabled = not has_lumberjack
 	upgrade_stone_btn.disabled = not has_sandgrube
 	
-	# Enable/disable production controls based on ownership
-	well_slider.editable = has_well
-	well_produce_btn.disabled = not has_well
-	lumber_slider.editable = has_lumberjack
-	lumber_produce_btn.disabled = not has_lumberjack
-	stone_slider.editable = has_sandgrube
-	stone_produce_btn.disabled = not has_sandgrube
+	# Update production controls based on ownership and production status
+	# Well
+	well_slider.editable = has_well and not well_producing
+	if well_producing:
+		if well_ready_at:
+			var ready_time = _parse_iso_time(well_ready_at)
+			var now = Time.get_unix_time_from_system()
+			if ready_time > now:
+				well_produce_btn.text = "Produziert... (%ds)" % int(ready_time - now)
+				well_produce_btn.disabled = true
+			else:
+				well_produce_btn.text = "Abholen"
+				well_produce_btn.disabled = false
+		else:
+			well_produce_btn.text = "Produziert..."
+			well_produce_btn.disabled = true
+	else:
+		well_produce_btn.text = "Produzieren"
+		well_produce_btn.disabled = not has_well
+	
+	# Lumberjack
+	lumber_slider.editable = has_lumberjack and not lumber_producing
+	if lumber_producing:
+		if lumber_ready_at:
+			var ready_time = _parse_iso_time(lumber_ready_at)
+			var now = Time.get_unix_time_from_system()
+			if ready_time > now:
+				lumber_produce_btn.text = "Produziert... (%ds)" % int(ready_time - now)
+				lumber_produce_btn.disabled = true
+			else:
+				lumber_produce_btn.text = "Abholen"
+				lumber_produce_btn.disabled = false
+		else:
+			lumber_produce_btn.text = "Produziert..."
+			lumber_produce_btn.disabled = true
+	else:
+		lumber_produce_btn.text = "Produzieren"
+		lumber_produce_btn.disabled = not has_lumberjack
+	
+	# Sandgrube
+	stone_slider.editable = has_sandgrube and not sandgrube_producing
+	if sandgrube_producing:
+		if sandgrube_ready_at:
+			var ready_time = _parse_iso_time(sandgrube_ready_at)
+			var now = Time.get_unix_time_from_system()
+			if ready_time > now:
+				stone_produce_btn.text = "Produziert... (%ds)" % int(ready_time - now)
+				stone_produce_btn.disabled = true
+			else:
+				stone_produce_btn.text = "Abholen"
+				stone_produce_btn.disabled = false
+		else:
+			stone_produce_btn.text = "Produziert..."
+			stone_produce_btn.disabled = true
+	else:
+		stone_produce_btn.text = "Produzieren"
+		stone_produce_btn.disabled = not has_sandgrube
 
 func _build(building_type: String) -> void:
 	var res := await Net.post_json("/economy/buildings/build", {"building_type": building_type})
@@ -517,24 +589,51 @@ func _build(building_type: String) -> void:
 	await _sync_state()
 
 func _produce(building_type: String, quantity: int) -> void:
-	if quantity <= 0:
-		_set_status("Bitte Menge auswählen")
-		return
+	# Check if we should collect or start
+	var is_collecting = false
+	if building_type == "well" and well_producing:
+		is_collecting = true
+	elif building_type == "lumberjack" and lumber_producing:
+		is_collecting = true
+	elif building_type == "sandgrube" and sandgrube_producing:
+		is_collecting = true
 	
-	var res := await Net.post_json("/economy/production/start", {"building_type": building_type, "quantity": quantity})
-	if not res.ok:
-		_set_status("Produktion fehlgeschlagen: %s" % _error_string(res))
-		return
-	_set_status("Produktion gestartet!")
-	await _sync_state()
+	if is_collecting:
+		# Collect
+		var res := await Net.post_json("/production/collect", {"building_type": building_type})
+		if not res.ok:
+			_set_status("Abholen fehlgeschlagen: %s" % _error_string(res))
+			return
+		_set_status("Erfolgreich abgeholt!")
+		await _sync_state()
+	else:
+		# Start production
+		if quantity <= 0:
+			_set_status("Bitte Menge auswählen")
+			return
+		
+		var res := await Net.post_json("/production/start", {"building_type": building_type, "quantity": quantity})
+		if not res.ok:
+			_set_status("Produktion fehlgeschlagen: %s" % _error_string(res))
+			return
+		_set_status("Produktion gestartet!")
+		await _sync_state()
+
+func _parse_iso_time(iso_string: String) -> float:
+	"""Parse ISO 8601 timestamp to Unix time"""
+	if iso_string == null or iso_string == "":
+		return 0.0
+	
+	# Remove 'Z' if present and parse
+	var cleaned = iso_string.replace("Z", "")
+	var unix_time = Time.get_unix_time_from_datetime_string(cleaned)
+	return unix_time
 
 func _poll_production() -> void:
 	if Net.token == "":
 		return
 	
-	var res := await Net.get_json("/economy/production/status")
-	if res.ok and res.data.has("in_progress"):
-		# Only sync state if there are productions (to collect completed ones)
-		var in_progress = res.data.get("in_progress", [])
-		if in_progress.size() > 0:
-			await _sync_state()
+	# Check if any building is producing
+	if well_producing or lumber_producing or sandgrube_producing:
+		# Refresh state to update timers and check if any production is complete
+		await _sync_state()
