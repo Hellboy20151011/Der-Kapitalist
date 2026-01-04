@@ -1,5 +1,6 @@
 extends Node
-# class_name GameState
+# Note: This is an autoload and globally accessible as 'GameState'
+# Do not use class_name with autoloads in Godot 4.5+
 
 # Authentication state
 var token: String = ""
