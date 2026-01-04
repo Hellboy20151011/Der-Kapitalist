@@ -361,7 +361,7 @@ text = "Filter:"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Alle"
-item_count = 4
+item_count = 5
 selected = 0
 popup/item_0/text = "Alle"
 popup/item_0/id = 0
@@ -371,6 +371,8 @@ popup/item_2/text = "Holz"
 popup/item_2/id = 2
 popup/item_3/text = "Stein"
 popup/item_3/id = 3
+popup/item_4/text = "Sand"
+popup/item_4/id = 4
 
 [node name="RefreshButton" type="Button" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Kaufen/FilterHBox"]
 layout_mode = 2
@@ -408,7 +410,7 @@ text = "Ressource:"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Wasser"
-item_count = 3
+item_count = 4
 selected = 0
 popup/item_0/text = "Wasser"
 popup/item_0/id = 0
@@ -416,6 +418,8 @@ popup/item_1/text = "Holz"
 popup/item_1/id = 1
 popup/item_2/text = "Stein"
 popup/item_2/id = 2
+popup/item_3/text = "Sand"
+popup/item_3/id = 3
 
 [node name="QuantityHBox" type="HBoxContainer" parent="VBoxMain/GameArea/MarketPanel/MarketMargin/MarketVBox/TabContainer/Verkaufen"]
 layout_mode = 2

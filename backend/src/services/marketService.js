@@ -1,4 +1,4 @@
-const RES_TYPES = ['water', 'wood', 'stone'];
+const RES_TYPES = ['water', 'wood', 'stone', 'sand'];
 
 export const MARKET = {
   feePercent: 7,

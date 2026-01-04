@@ -189,6 +189,8 @@ func _refresh_market_listings() -> void:
 		resource_type = "wood"
 	elif filter_idx == 3:
 		resource_type = "stone"
+	elif filter_idx == 4:
+		resource_type = "sand"
 	
 	var path = "/market/listings"
 	if resource_type != "":
@@ -238,8 +240,8 @@ func _add_listing_item(listing: Dictionary) -> void:
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(info_vbox)
 	
-	var resource_icon = {"water": "💧", "wood": "🪓", "stone": "🪨"}
-	var resource_name = {"water": "Wasser", "wood": "Holz", "stone": "Stein"}
+	var resource_icon = {"water": "💧", "wood": "🪓", "stone": "🪨", "sand": "🏖️"}
+	var resource_name = {"water": "Wasser", "wood": "Holz", "stone": "Stein", "sand": "Sand"}
 	var res_type = listing.get("resource_type", "")
 	
 	var title_label = Label.new()
@@ -293,7 +295,7 @@ func _create_market_listing() -> void:
 	_show_loading(true)
 	_disable_buttons(true)
 	
-	var resource_types = ["water", "wood", "stone"]
+	var resource_types = ["water", "wood", "stone", "sand"]
 	var resource_type = resource_types[resource_type_option.selected]
 	var quantity = int(quantity_input.value)
 	var price_per_unit = int(price_input.value)

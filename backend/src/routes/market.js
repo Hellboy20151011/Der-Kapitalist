@@ -7,7 +7,7 @@ import { MARKET, countActiveListings } from '../services/marketService.js';
 export const marketRouter = express.Router();
 
 const createSchema = z.object({
-  resource_type: z.enum(['water', 'wood', 'stone']),
+  resource_type: z.enum(['water', 'wood', 'stone', 'sand']),
   quantity: z.number().int().positive().max(1_000_000),
   price_per_unit: z.number().int().positive().max(1_000_000_000)
 });
@@ -19,7 +19,7 @@ marketRouter.get('/listings', authRequired, async (req, res) => {
   const params = [];
   let where = `WHERE status = 'active' AND expires_at > now()`;
 
-  if (resourceType && ['water', 'wood', 'stone'].includes(resourceType)) {
+  if (resourceType && ['water', 'wood', 'stone', 'sand'].includes(resourceType)) {
     params.push(resourceType);
     where += ` AND resource_type = $${params.length}`;
   }
