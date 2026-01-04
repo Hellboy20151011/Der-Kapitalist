@@ -3,6 +3,12 @@ extends Control
 # Dev mode - set to true to show dev features (reset button)
 const DEV_MODE = OS.is_debug_build()
 
+# UI Constants
+const STATUS_MESSAGE_TIMEOUT = 5.0
+const RESOURCE_ICONS = {"water": "💧", "wood": "🪓", "stone": "🪨", "sand": "🏖️"}
+const RESOURCE_NAMES = {"water": "Wasser", "wood": "Holz", "stone": "Stein", "sand": "Sand"}
+const RESOURCE_TYPES = ["water", "wood", "stone", "sand"]
+
 # New UI references
 @onready var company_label: Label = $VBoxMain/HeaderBar/HeaderContent/HBox/LeftInfo/CompanyLabel
 @onready var stats_line1: Label = $VBoxMain/HeaderBar/HeaderContent/HBox/LeftInfo/StatsLine1
@@ -240,12 +246,10 @@ func _add_listing_item(listing: Dictionary) -> void:
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(info_vbox)
 	
-	var resource_icon = {"water": "💧", "wood": "🪓", "stone": "🪨", "sand": "🏖️"}
-	var resource_name = {"water": "Wasser", "wood": "Holz", "stone": "Stein", "sand": "Sand"}
 	var res_type = listing.get("resource_type", "")
 	
 	var title_label = Label.new()
-	title_label.text = "%s %s" % [resource_icon.get(res_type, "📦"), resource_name.get(res_type, res_type)]
+	title_label.text = "%s %s" % [RESOURCE_ICONS.get(res_type, "📦"), RESOURCE_NAMES.get(res_type, res_type)]
 	title_label.add_theme_font_size_override("font_size", 16)
 	info_vbox.add_child(title_label)
 	
@@ -295,8 +299,7 @@ func _create_market_listing() -> void:
 	_show_loading(true)
 	_disable_buttons(true)
 	
-	var resource_types = ["water", "wood", "stone", "sand"]
-	var resource_type = resource_types[resource_type_option.selected]
+	var resource_type = RESOURCE_TYPES[resource_type_option.selected]
 	var quantity = int(quantity_input.value)
 	var price_per_unit = int(price_input.value)
 	
@@ -341,9 +344,9 @@ func _disable_buttons(disable: bool) -> void:
 
 func _set_status(msg: String, is_result: bool = false) -> void:
 	status_label.text = msg
-	# Auto-clear result messages after 5 seconds
+	# Auto-clear result messages after timeout
 	if is_result:
-		await get_tree().create_timer(5.0).timeout
+		await get_tree().create_timer(STATUS_MESSAGE_TIMEOUT).timeout
 		if status_label.text == msg:
 			status_label.text = ""
 

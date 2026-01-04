@@ -24,7 +24,7 @@ async function seedNewPlayer(client, userId) {
   await client.query(`INSERT INTO player_state(user_id, coins, last_tick_at) VALUES ($1, 100, now())`, [userId]);
 
   // Start-Inventar
-  const resources = ['water', 'wood', 'stone'];
+  const resources = ['water', 'wood', 'stone', 'sand'];
   for (const r of resources) {
     await client.query(
       `INSERT INTO inventory(user_id, resource_type, amount) VALUES ($1, $2, 0)
