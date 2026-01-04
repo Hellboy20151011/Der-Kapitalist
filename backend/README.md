@@ -54,11 +54,11 @@ The server will start on `http://localhost:3000` by default.
 - `POST /economy/sell` - Sell resources for coins (requires authentication)
   - Body: `{ resource_type: string (enum: water, wood, stone), quantity: integer (1-1,000,000) }`
 - `POST /economy/buildings/build` - Build a new building (requires authentication)
-  - Body: `{ building_type: string (enum: well, lumberjack, stonemason) }`
+  - Body: `{ building_type: string (enum: well, lumberjack, sandgrube) }`
 - `POST /economy/buildings/upgrade` - Upgrade a building (requires authentication)
-  - Body: `{ building_type: string (enum: well, lumberjack, stonemason) }`
+  - Body: `{ building_type: string (enum: well, lumberjack, sandgrube) }`
 - `POST /economy/production/start` - Start a production job (requires authentication)
-  - Body: `{ building_type: string (enum: well, lumberjack, stonemason), quantity: integer (1-1,000) }`
+  - Body: `{ building_type: string (enum: well, lumberjack, sandgrube), quantity: integer (1-1,000) }`
 - `GET /economy/production/status` - Get production queue status (requires authentication)
 
 ### Market (Player-to-Player Trading)
@@ -70,6 +70,15 @@ The server will start on `http://localhost:3000` by default.
 
 ### Health Check
 - `GET /health` - Server health check
+
+### Development (DEV only - not available in production)
+- `POST /dev/reset-account` - Reset user account to starting state (requires authentication)
+  - Resets coins to 100
+  - Clears inventory
+  - Deletes all buildings and re-adds starting buildings (well, lumberjack, sandgrube)
+  - Cancels all active production jobs
+  - Cancels all market listings and returns resources to inventory
+  - **Only available when NODE_ENV != 'production'**
 
 ## Authentication
 
@@ -91,7 +100,7 @@ Authorization: Bearer <token>
 ### Resources
 - Water (produced by wells)
 - Wood (produced by lumberjacks)
-- Stone (produced by stonemasons)
+- Stone/Sand (produced by sandgrube - sand mines)
 
 ### Buildings
 Each building produces resources over time. Production increases with building level.

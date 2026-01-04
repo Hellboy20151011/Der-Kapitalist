@@ -76,6 +76,40 @@ func _ready() -> void:
 5. **Mobile Testing**: Auf verschiedenen Geräten testen
 6. **Sound-Effekte**: Audio-Feedback für Interaktionen
 
+## ✨ Neue Features (Januar 2026)
+
+### Marktplatz-UI (🏪)
+Ein vollständiges Marktplatz-System wurde implementiert:
+- **Kaufen-Tab**: Zeigt aktive Angebote von anderen Spielern
+  - Filter nach Ressourcentyp (Alle, Wasser, Holz, Stein)
+  - Aktualisieren-Button zum Neuladen der Listings
+  - Detaillierte Anzeige: Ressource, Menge, Preis pro Einheit, Gesamtpreis
+  - Kaufen-Button für sofortigen Kauf
+- **Verkaufen-Tab**: Erstellen eigener Marktangebote
+  - Ressourcentyp auswählen
+  - Menge eingeben (1-1.000.000)
+  - Preis pro Einheit festlegen (1-1.000.000.000 Coins)
+  - Anzeige der 7% Marktgebühr
+  - Erstellen-Button zum Veröffentlichen
+
+### UX-Verbesserungen
+- **Loading-Spinner**: Zeigt "⏳ Bitte warten..." während API-Anfragen
+- **Button-Deaktivierung**: Buttons werden während Requests deaktiviert um Doppelklicks zu verhindern
+- **Verbesserte Statusmeldungen**: 
+  - Erfolgreiche Aktionen zeigen "✓" mit grüner Nachricht
+  - Fehler zeigen "❌" mit roter Fehlerbeschreibung
+  - Auto-Clear nach 5 Sekunden für Ergebnisnachrichten
+
+### Dev-Tools (nur Debug-Build)
+- **Reset Account Button**: Setzt den Account zurück auf Startzustand
+  - Nur sichtbar in Debug-Builds (OS.is_debug_build())
+  - Setzt Coins auf 100 zurück
+  - Löscht Inventar
+  - Löscht alle Gebäude und fügt Startgebäude hinzu
+  - Bricht alle laufenden Produktionen ab
+  - Löscht alle Marktangebote und gibt Ressourcen zurück
+- **Backend-Endpoint**: `/dev/reset-account` (nur wenn NODE_ENV != 'production')
+
 ## 📸 Screenshots
 
 > **Hinweis**: Da die Entwicklungsumgebung keinen Godot-Editor enthält, können keine Screenshots erstellt werden. Bitte öffnen Sie das Projekt in Godot, um die UI zu sehen.

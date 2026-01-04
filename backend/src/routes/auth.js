@@ -34,7 +34,7 @@ async function seedNewPlayer(client, userId) {
   }
 
   // Start-Gebäude (1 pro Typ)
-  const buildings = ['well', 'lumberjack', 'stonemason'];
+  const buildings = ['well', 'lumberjack', 'sandgrube'];
   for (const b of buildings) {
     await client.query(
       `INSERT INTO buildings(user_id, building_type, level) VALUES ($1, $2, 1)
