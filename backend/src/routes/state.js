@@ -40,6 +40,11 @@ stateRouter.get('/', authRequired, async (req, res) => {
           const qty = BigInt(b.producing_qty ?? 0);
           const resource = BUILDING_RESOURCES[b.building_type];
           
+          // Data integrity check
+          if (!b.producing_qty && b.is_producing) {
+            console.warn(`Data integrity issue: building ${b.building_type} for user ${userId} is_producing=true but producing_qty is null`);
+          }
+          
           if (qty > 0n && resource) {
             // Add to inventory
             await client.query(

@@ -526,12 +526,12 @@ func _error_string(res: Dictionary) -> String:
 	return "unbekannt"
 
 func _update_slider_max(slider: HSlider, building_type: String, has_building: bool, is_producing: bool) -> void:
-	"""Helper function to update slider max value based on available coins"""
+	"""Helper function to update slider max value based on available coins and building state"""
 	if not has_building:
 		return
 	
 	var cost = PRODUCTION_COSTS[building_type]
-	var max_qty = max(1, current_coins / cost)
+	var max_qty = max(1, int(float(current_coins) / float(cost)))  # Use float division for accuracy
 	slider.max_value = float(max_qty)
 	if not is_producing:
 		slider.value = min(slider.value, float(max_qty))
