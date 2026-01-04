@@ -1,7 +1,9 @@
 extends Node
 class_name Api
 
-const BASE_URL := "http://localhost:3000"
+# Base URL can be configured in project settings or overridden via environment
+# Default to localhost for development
+const DEFAULT_BASE_URL := "http://localhost:3000"
 
 # Legacy compatibility - kept for gradual migration
 var token: String = "":
@@ -10,7 +12,18 @@ var token: String = "":
 	set(value):
 		GameState.token = value
 
-var base_url := BASE_URL
+var base_url := _get_base_url()
+
+func _get_base_url() -> String:
+	# Check for project setting first
+	if ProjectSettings.has_setting("application/config/api_base_url"):
+		return ProjectSettings.get_setting("application/config/api_base_url")
+	# Check environment variable (for exports)
+	var env_url = OS.get_environment("API_BASE_URL")
+	if env_url != "":
+		return env_url
+	# Fall back to default
+	return DEFAULT_BASE_URL
 
 func _headers() -> PackedStringArray:
 	var h := PackedStringArray(["Content-Type: application/json"])

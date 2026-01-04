@@ -201,6 +201,44 @@ Start a production job (requires authentication).
 - Production takes time (3 seconds per unit for well, varies by building)
 - Collection happens automatically when production completes
 
+### POST /production/collect
+Manually collect finished production (requires authentication).
+
+**Note:** In the current implementation, production is automatically collected when querying `/state`, so this endpoint is optional.
+
+**Request Body:**
+```json
+{
+  "building_type": "well"
+}
+```
+
+**Response (Success):**
+```json
+{
+  "ok": true,
+  "building_type": "well",
+  "quantity": "5",
+  "resource": "water"
+}
+```
+
+**Response (Error):**
+```json
+{
+  "error": "nothing_to_collect"
+}
+```
+
+or
+
+```json
+{
+  "error": "not_ready_yet",
+  "ready_at": "2024-01-15T10:35:00Z"
+}
+```
+
 ## Market
 
 ### GET /market/listings
