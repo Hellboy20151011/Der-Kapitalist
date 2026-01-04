@@ -110,40 +110,127 @@ func dev_reset_account() -> Dictionary:
 # LOW-LEVEL HTTP METHODS
 # ============================================================================
 
-func post_json(path: String, body: Dictionary) -> Dictionary:
+func post_json(path: String, body: Dictionary, timeout: float = 30.0) -> Dictionary:
 	## Make a POST request with JSON body
 	var http := HTTPRequest.new()
 	add_child(http)
+	
+	# Timeout-Timer erstellen
+	var timer := get_tree().create_timer(timeout)
+	var timed_out := false
+	
+	# Timeout-Handler (vor Request registrieren!)
+	timer.timeout.connect(func():
+		timed_out = true
+		http.cancel_request()
+	)
+	
+	# Request senden
 	var err := http.request(base_url + path, _headers(), HTTPClient.METHOD_POST, JSON.stringify(body))
 	if err != OK:
 		http.queue_free()
-		return {"ok": false, "error": "request_failed"}
+		return {"ok": false, "error": "request_failed", "details": "Anfrage konnte nicht gesendet werden"}
+	
+	# Warte auf Response
 	var result = await http.request_completed
 	http.queue_free()
-
+	
+	# Check Timeout
+	if timed_out:
+		return {"ok": false, "error": "timeout", "details": "Server antwortet nicht (Timeout nach %ds)" % int(timeout)}
+	
+	# Check Netzwerkfehler (result[0])
+	var request_result: int = result[0]
+	if request_result != HTTPRequest.RESULT_SUCCESS:
+		return {
+			"ok": false,
+			"error": "network_error",
+			"details": _get_network_error_message(request_result)
+		}
+	
+	# Parse Response (wie bisher)
 	var code: int = result[1]
 	var bytes: PackedByteArray = result[3]
 	var text := bytes.get_string_from_utf8()
 	var data = {}
 	if text != "":
 		data = JSON.parse_string(text)
+	
 	return {"ok": code >= 200 and code < 300, "code": code, "data": data}
 
-func get_json(path: String) -> Dictionary:
+func get_json(path: String, timeout: float = 30.0) -> Dictionary:
 	## Make a GET request
 	var http := HTTPRequest.new()
 	add_child(http)
+	
+	# Timeout-Timer erstellen
+	var timer := get_tree().create_timer(timeout)
+	var timed_out := false
+	
+	# Timeout-Handler (vor Request registrieren!)
+	timer.timeout.connect(func():
+		timed_out = true
+		http.cancel_request()
+	)
+	
+	# Request senden
 	var err := http.request(base_url + path, _headers(), HTTPClient.METHOD_GET)
 	if err != OK:
 		http.queue_free()
-		return {"ok": false, "error": "request_failed"}
+		return {"ok": false, "error": "request_failed", "details": "Anfrage konnte nicht gesendet werden"}
+	
+	# Warte auf Response
 	var result = await http.request_completed
 	http.queue_free()
-
+	
+	# Check Timeout
+	if timed_out:
+		return {"ok": false, "error": "timeout", "details": "Server antwortet nicht (Timeout nach %ds)" % int(timeout)}
+	
+	# Check Netzwerkfehler (result[0])
+	var request_result: int = result[0]
+	if request_result != HTTPRequest.RESULT_SUCCESS:
+		return {
+			"ok": false,
+			"error": "network_error",
+			"details": _get_network_error_message(request_result)
+		}
+	
+	# Parse Response (wie bisher)
 	var code: int = result[1]
 	var bytes: PackedByteArray = result[3]
 	var text := bytes.get_string_from_utf8()
 	var data = {}
 	if text != "":
 		data = JSON.parse_string(text)
+	
 	return {"ok": code >= 200 and code < 300, "code": code, "data": data}
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+func _get_network_error_message(error_code: int) -> String:
+	## Returns user-friendly German error messages for network errors
+	match error_code:
+		HTTPRequest.RESULT_CANT_CONNECT:
+			return "Kann keine Verbindung zum Server herstellen"
+		HTTPRequest.RESULT_CANT_RESOLVE:
+			return "Server-Adresse konnte nicht aufgelöst werden (DNS-Fehler)"
+		HTTPRequest.RESULT_CONNECTION_ERROR:
+			return "Verbindung wurde unterbrochen"
+		HTTPRequest.RESULT_TLS_HANDSHAKE_ERROR:
+			return "Sichere Verbindung fehlgeschlagen (SSL/TLS-Fehler)"
+		HTTPRequest.RESULT_NO_RESPONSE:
+			return "Server antwortet nicht"
+		HTTPRequest.RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+			return "Server-Antwort zu groß"
+		HTTPRequest.RESULT_TIMEOUT:
+			return "Zeitüberschreitung - Server antwortet zu langsam"
+		HTTPRequest.RESULT_REQUEST_FAILED:
+			return "Anfrage fehlgeschlagen"
+		HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED:
+			return "Zu viele Weiterleitungen"
+		_:
+			return "Netzwerkfehler (Code: %d)" % error_code
+
