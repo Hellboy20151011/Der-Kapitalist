@@ -13,6 +13,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 → [README.md](../README.md) - Projekt-Übersicht  
 → [SUMMARY.md](SUMMARY.md) - Review-Zusammenfassung
 → [CHANGELOG.md](../CHANGELOG.md) - Änderungshistorie
+→ [CLEANUP_SUMMARY.md](CLEANUP_SUMMARY.md) - Projekt-Aufräumung Zusammenfassung
 
 ### ...das Backend einrichten ⚙️
 → [backend/README.md](../backend/README.md) - Backend-Dokumentation
@@ -40,6 +41,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 |----------|-------|----------|------------|
 | [README.md](../README.md) | Projekt-Übersicht | 2 Min | Alle |
 | [CHANGELOG.md](../CHANGELOG.md) | Änderungshistorie | 2 Min | Alle |
+| [CLEANUP_SUMMARY.md](CLEANUP_SUMMARY.md) | Projekt-Aufräumung Zusammenfassung | 5 Min | Entwickler, Projektleiter |
 | [SUMMARY.md](SUMMARY.md) | Review-Zusammenfassung | 5 Min | Projektleiter, Entwickler |
 | [QUICKSTART.md](QUICKSTART.md) | Schneller Start | 10 Min | Entwickler |
 
