@@ -234,7 +234,7 @@ Siehe Projekt-Lizenz.
 
 ---
 
-**Letztes Update:** 2026-01-03  
+**Letztes Update:** 2026-01-06  
 **Version:** 1.0.0  
 **Status:** ✅ Vollständig
 

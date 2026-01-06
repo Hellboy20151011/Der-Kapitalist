@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated verification scripts to check for docs in new location
 - **Updated Godot Engine version references**: All documentation now specifies Godot Engine 4.5+ (recommended: 4.5.1) instead of 4.2+
 - **Updated Node.js version references**: Standardized to Node.js 20+ across all documentation for consistency
+- **Documentation verification**: Updated DOCS_INDEX.md last update date to 2026-01-06
 
 ### Removed
 - Removed obsolete `net.gd.uid` file from autoload folder (net.gd was previously deprecated)
