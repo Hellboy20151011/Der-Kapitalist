@@ -2,9 +2,9 @@
 
 ## Voraussetzungen
 
-- Node.js 18+ ([Download](https://nodejs.org/))
+- Node.js 20+ ([Download](https://nodejs.org/))
 - PostgreSQL 14+ ([Download](https://www.postgresql.org/download/))
-- Godot Engine 4+ ([Download](https://godotengine.org/download/)) - für Client-Entwicklung
+- Godot Engine 4.5+ (empfohlen: 4.5.1) ([Download](https://godotengine.org/download/)) - für Client-Entwicklung
 
 ## Setup in 5 Minuten
 

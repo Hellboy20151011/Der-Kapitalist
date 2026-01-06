@@ -62,7 +62,7 @@ Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
 
 ### Frontend Setup (Godot)
 
-1. Installiere Godot Engine 4.2+
+1. Installiere Godot Engine 4.5+ (empfohlen: 4.5.1)
 2. Öffne das Projekt in Godot
 3. (Optional) Konfiguriere API Base URL in Projekt-Einstellungen:
    - Project → Project Settings → Application → Config

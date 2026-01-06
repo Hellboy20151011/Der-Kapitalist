@@ -44,7 +44,7 @@ Drei neue Dokumentationsdateien wurden erstellt:
 
 ### In Godot Engine:
 
-1. Öffnen Sie das Projekt in Godot Engine 4.2+
+1. Öffnen Sie das Projekt in Godot Engine 4.5+ (empfohlen: 4.5.1)
 2. Öffnen Sie die Szene `Scenes/Main.tscn`
 3. Starten Sie die Szene (F6) oder das gesamte Projekt (F5)
 
@@ -116,7 +116,7 @@ Ein vollständiges Marktplatz-System wurde implementiert:
 
 ## 🛠️ Technische Details
 
-- **Godot Version**: 4.2+
+- **Godot Version**: 4.5+ (empfohlen: 4.5.1)
 - **Viewport**: 1080x1920 (Mobile Portrait)
 - **Dateien geändert**:
   - `Scenes/Main.tscn` (+425 Zeilen)

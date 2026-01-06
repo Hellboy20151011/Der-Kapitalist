@@ -4,7 +4,7 @@ Backend API server for Der-Kapitalist mobile game.
 
 ## Prerequisites
 
-- Node.js 18+ 
+- Node.js 20+ 
 - PostgreSQL 14+
 
 ## Setup

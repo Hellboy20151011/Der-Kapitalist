@@ -113,7 +113,7 @@ $VBoxMain.visible = false
 
 ## Technische Details
 
-- **Engine**: Godot 4.2
+- **Engine**: Godot 4.5.1
 - **Viewport**: 1080x1920 (Mobile Portrait)
 - **Layout**: Responsive mit Anchors und Container-Nodes
 - **Skriptsprache**: GDScript

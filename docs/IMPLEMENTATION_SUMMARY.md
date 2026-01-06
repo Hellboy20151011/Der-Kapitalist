@@ -115,7 +115,7 @@ Main (Control)
 ### Critical
 1. **3D Building Graphics**: Replace placeholder with actual building views
 2. **Icon Assets**: Replace emojis with professional icon graphics
-3. **Testing in Godot**: Load and test in Godot Engine 4.2+
+3. **Testing in Godot**: Load and test in Godot Engine 4.5+ (recommended: 4.5.1)
 
 ### Important
 4. **Stats Panel**: Implement full statistics view
