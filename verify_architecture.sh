@@ -49,8 +49,8 @@ fi
 # Check documentation
 echo ""
 echo "5. Checking documentation..."
-if [ -f "API.md" ] && [ -f "ARCHITECTURE.md" ]; then
-    echo "   ✓ New documentation files exist"
+if [ -f "docs/API.md" ] && [ -f "docs/ARCHITECTURE.md" ] && [ -f "docs/DOCS_INDEX.md" ]; then
+    echo "   ✓ Documentation files exist in docs/ folder"
 else
     echo "   ✗ Missing documentation"
     exit 1

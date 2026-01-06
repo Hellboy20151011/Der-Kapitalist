@@ -10,11 +10,11 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 → [QUICKSTART.md](QUICKSTART.md) - 5-Minuten-Setup-Guide
 
 ### ...das Projekt verstehen 📖
-→ [README.md](README.md) - Projekt-Übersicht  
+→ [README.md](../README.md) - Projekt-Übersicht  
 → [SUMMARY.md](SUMMARY.md) - Review-Zusammenfassung
 
 ### ...das Backend einrichten ⚙️
-→ [backend/README.md](backend/README.md) - Backend-Dokumentation
+→ [backend/README.md](../backend/README.md) - Backend-Dokumentation
 
 ### ...Code-Qualität überprüfen 🔍
 → [REVIEW.md](REVIEW.md) - Detaillierte Code-Analyse
@@ -37,7 +37,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 
 | Dokument | Zweck | Lesezeit | Zielgruppe |
 |----------|-------|----------|------------|
-| [README.md](README.md) | Projekt-Übersicht | 2 Min | Alle |
+| [README.md](../README.md) | Projekt-Übersicht | 2 Min | Alle |
 | [SUMMARY.md](SUMMARY.md) | Review-Zusammenfassung | 5 Min | Projektleiter, Entwickler |
 | [QUICKSTART.md](QUICKSTART.md) | Schneller Start | 10 Min | Entwickler |
 
@@ -45,7 +45,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 
 | Dokument | Zweck | Lesezeit | Zielgruppe |
 |----------|-------|----------|------------|
-| [backend/README.md](backend/README.md) | Backend-Setup & API | 5 Min | Backend-Entwickler |
+| [backend/README.md](../backend/README.md) | Backend-Setup & API | 5 Min | Backend-Entwickler |
 | [backend/.env.example](backend/.env.example) | Konfigurations-Template | 1 Min | Entwickler |
 | [backend/package.json](backend/package.json) | Dependencies | 1 Min | Entwickler |
 | [DB_Schema.md](DB_Schema.md) | Datenbank-Schema | 3 Min | Backend-Entwickler, DBAs |
@@ -70,9 +70,9 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 
 ### Für neue Entwickler
 
-1. [README.md](README.md) - Projekt verstehen
+1. [README.md](../README.md) - Projekt verstehen
 2. [QUICKSTART.md](QUICKSTART.md) - Setup durchführen
-3. [backend/README.md](backend/README.md) - Backend-Details lernen
+3. [backend/README.md](../backend/README.md) - Backend-Details lernen
 4. [DB_Schema.md](DB_Schema.md) - Datenmodell verstehen
 5. [DATABASE_AND_BUILDINGS.md](DATABASE_AND_BUILDINGS.md) - DB-Verbindung & Gebäude-System
 
@@ -92,7 +92,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 1. [SUMMARY.md](SUMMARY.md) - Projekt-Status verstehen
 2. [SECURITY.md](SECURITY.md) - Sicherheits-Anforderungen
 3. [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) - Deployment planen
-4. [backend/README.md](backend/README.md) - Technische Details
+4. [backend/README.md](../backend/README.md) - Technische Details
 
 **Geschätzte Zeit:** 45 Minuten
 
@@ -109,8 +109,8 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 ## 🔍 Dokumente nach Thema
 
 ### 🏗️ Architektur
-- [README.md](README.md) - Technologie-Stack
-- [backend/README.md](backend/README.md) - Backend-Architektur
+- [README.md](../README.md) - Technologie-Stack
+- [backend/README.md](../backend/README.md) - Backend-Architektur
 - [DB_Schema.md](DB_Schema.md) - Datenbank-Design
 - [DATABASE_AND_BUILDINGS.md](DATABASE_AND_BUILDINGS.md) - DB-Verbindung & Gebäude-System
 - [REVIEW.md](REVIEW.md) - Architektur-Bewertung
@@ -123,15 +123,15 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 ### 🚀 Deployment
 - [QUICKSTART.md](QUICKSTART.md) - Lokales Setup
 - [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) - Produktions-Deployment
-- [backend/README.md](backend/README.md) - Server-Konfiguration
+- [backend/README.md](../backend/README.md) - Server-Konfiguration
 
 ### 🎮 Game-Design
-- [README.md](README.md) - Spielmechanik-Übersicht
+- [README.md](../README.md) - Spielmechanik-Übersicht
 - [REVIEW.md](REVIEW.md) - Game-Design-Analyse
 - [DB_Schema.md](DB_Schema.md) - Spiel-Datenmodell
 
 ### 💻 API
-- [backend/README.md](backend/README.md) - API-Endpoints: Auth, State, Economy, Market
+- [backend/README.md](../backend/README.md) - API-Endpoints: Auth, State, Economy, Market
 - [QUICKSTART.md](QUICKSTART.md) - API-Beispiele
 - Code in `backend/src/routes/`
 
@@ -184,7 +184,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 → [QUICKSTART.md](QUICKSTART.md) - Troubleshooting-Sektion
 
 ### Fehler in der API?
-→ [backend/README.md](backend/README.md) - API-Dokumentation
+→ [backend/README.md](../backend/README.md) - API-Dokumentation
 
 ### Sicherheits-Frage?
 → [SECURITY.md](SECURITY.md) - Sicherheits-Checkliste

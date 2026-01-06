@@ -336,7 +336,7 @@ Diese Checkliste hilft dabei, das Projekt sicher in Produktion zu bringen.
 
 ## Ressourcen
 
-- [Backend README](backend/README.md)
+- [Backend README](../backend/README.md)
 - [Security Checklist](SECURITY.md)
 - [Quick Start Guide](QUICKSTART.md)
 - [Project Review](REVIEW.md)

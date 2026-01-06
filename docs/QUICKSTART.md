@@ -309,7 +309,7 @@ lsof -ti:3000 | xargs kill -9
 
 ## Weiterführende Dokumentation
 
-- [Backend README](backend/README.md) - Detaillierte Backend-Dokumentation
+- [Backend README](../backend/README.md) - Detaillierte Backend-Dokumentation
 - [REVIEW.md](REVIEW.md) - Vollständige Projekt-Analyse
 - [SECURITY.md](SECURITY.md) - Sicherheits-Checkliste
 - [DB_Schema.md](DB_Schema.md) - Datenbank-Schema

@@ -246,8 +246,8 @@ Das Projekt "Der-Kapitalist" ist **gut strukturiert und sicher implementiert**. 
 
 Alle wichtigen Dokumente wurden erstellt:
 
-- 📄 [README.md](README.md) - Projektübersicht
-- 📄 [backend/README.md](backend/README.md) - Backend-Dokumentation
+- 📄 [README.md](../README.md) - Projektübersicht
+- 📄 [backend/README.md](../backend/README.md) - Backend-Dokumentation
 - 📄 [REVIEW.md](REVIEW.md) - Detaillierte Analyse
 - 📄 [SECURITY.md](SECURITY.md) - Sicherheits-Checkliste
 - 📄 [QUICKSTART.md](QUICKSTART.md) - Schnellstart-Guide
