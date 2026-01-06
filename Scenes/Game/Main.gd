@@ -1,7 +1,7 @@
 extends Control
 
 # Dev mode - set to true to show dev features (reset button)
-const DEV_MODE = OS.is_debug_build()
+@export var DEV_MODE: bool = true
 
 # Production costs (must match backend CONFIG)
 const PRODUCTION_COSTS = {
@@ -107,57 +107,64 @@ var sandgrube_producing := false
 var sandgrube_ready_at = null
 
 func _ready() -> void:
+	# Check if logged in
+	if GameState.token == "":
+		push_error("No token found, returning to login")
+		get_tree().change_scene_to_file("res://Scenes/Auth/Login.tscn")
+		return
+	
 	status_label.text = ""
 	
 	# Dev mode setup
-	dev_reset_btn.visible = DEV_MODE
-	if DEV_MODE:
-		dev_reset_btn.pressed.connect(_dev_reset_account)
+	if dev_reset_btn:
+		dev_reset_btn.visible = DEV_MODE
+		if DEV_MODE:
+			dev_reset_btn.pressed.connect(_dev_reset_account)
 	
 	# New UI connections
-	logout_btn.pressed.connect(_logout)
-	stats_btn.pressed.connect(_show_stats)
-	buildings_btn.pressed.connect(_show_buildings_panel)
-	production_btn.pressed.connect(_show_production_panel)
-	help_btn.pressed.connect(_show_help)
-	market_btn.pressed.connect(_show_market)
+	if logout_btn: logout_btn.pressed.connect(_logout)
+	if stats_btn: stats_btn.pressed.connect(_show_stats)
+	if buildings_btn: buildings_btn.pressed.connect(_show_buildings_panel)
+	if production_btn: production_btn.pressed.connect(_show_production_panel)
+	if help_btn: help_btn.pressed.connect(_show_help)
+	if market_btn: market_btn.pressed.connect(_show_market)
 	
 	# Market panel connections
-	market_close_btn.pressed.connect(_close_market)
-	refresh_btn.pressed.connect(_refresh_market_listings)
-	resource_filter.item_selected.connect(func(_idx): _refresh_market_listings())
-	create_listing_btn.pressed.connect(_create_market_listing)
+	if market_close_btn: market_close_btn.pressed.connect(_close_market)
+	if refresh_btn: refresh_btn.pressed.connect(_refresh_market_listings)
+	if resource_filter: resource_filter.item_selected.connect(func(_idx): _refresh_market_listings())
+	if create_listing_btn: create_listing_btn.pressed.connect(_create_market_listing)
 	
-	building_selector.item_selected.connect(_on_building_selected)
-	dialog_close_btn.pressed.connect(_close_dialog)
+	if building_selector: building_selector.item_selected.connect(_on_building_selected)
+	if dialog_close_btn: dialog_close_btn.pressed.connect(_close_dialog)
 	
-	home_icon.pressed.connect(_on_home_icon_pressed)
-	well_icon.pressed.connect(_on_well_icon_pressed)
-	lumber_icon.pressed.connect(_on_lumber_icon_pressed)
-	stone_icon.pressed.connect(_on_stone_icon_pressed)
+	if home_icon: home_icon.pressed.connect(_on_home_icon_pressed)
+	if well_icon: well_icon.pressed.connect(_on_well_icon_pressed)
+	if lumber_icon: lumber_icon.pressed.connect(_on_lumber_icon_pressed)
+	if stone_icon: stone_icon.pressed.connect(_on_stone_icon_pressed)
 
 	# Legacy UI connections
-	sync_btn.pressed.connect(_sync_state)
+	if sync_btn: sync_btn.pressed.connect(_sync_state)
 
-	upgrade_well_btn.pressed.connect(func(): await _upgrade("well"))
-	upgrade_lumber_btn.pressed.connect(func(): await _upgrade("lumberjack"))
-	upgrade_stone_btn.pressed.connect(func(): await _upgrade("sandgrube"))
+	if upgrade_well_btn: upgrade_well_btn.pressed.connect(func(): await _upgrade("well"))
+	if upgrade_lumber_btn: upgrade_lumber_btn.pressed.connect(func(): await _upgrade("lumberjack"))
+	if upgrade_stone_btn: upgrade_stone_btn.pressed.connect(func(): await _upgrade("sandgrube"))
 
-	build_well_btn.pressed.connect(func(): await _build("well"))
-	build_lumber_btn.pressed.connect(func(): await _build("lumberjack"))
-	build_stone_btn.pressed.connect(func(): await _build("sandgrube"))
+	if build_well_btn: build_well_btn.pressed.connect(func(): await _build("well"))
+	if build_lumber_btn: build_lumber_btn.pressed.connect(func(): await _build("lumberjack"))
+	if build_stone_btn: build_stone_btn.pressed.connect(func(): await _build("sandgrube"))
 
-	well_slider.value_changed.connect(func(val): well_qty_label.text = str(int(val)))
-	lumber_slider.value_changed.connect(func(val): lumber_qty_label.text = str(int(val)))
-	stone_slider.value_changed.connect(func(val): stone_qty_label.text = str(int(val)))
+	if well_slider: well_slider.value_changed.connect(func(val): well_qty_label.text = str(int(val)))
+	if lumber_slider: lumber_slider.value_changed.connect(func(val): lumber_qty_label.text = str(int(val)))
+	if stone_slider: stone_slider.value_changed.connect(func(val): stone_qty_label.text = str(int(val)))
 
-	well_produce_btn.pressed.connect(func(): await _produce("well", int(well_slider.value)))
-	lumber_produce_btn.pressed.connect(func(): await _produce("lumberjack", int(lumber_slider.value)))
-	stone_produce_btn.pressed.connect(func(): await _produce("sandgrube", int(stone_slider.value)))
+	if well_produce_btn: well_produce_btn.pressed.connect(func(): await _produce("well", int(well_slider.value)))
+	if lumber_produce_btn: lumber_produce_btn.pressed.connect(func(): await _produce("lumberjack", int(lumber_slider.value)))
+	if stone_produce_btn: stone_produce_btn.pressed.connect(func(): await _produce("sandgrube", int(stone_slider.value)))
 
-	sell_water_btn.pressed.connect(func(): await _sell("water", 10))
-	sell_wood_btn.pressed.connect(func(): await _sell("wood", 10))
-	sell_stone_btn.pressed.connect(func(): await _sell("stone", 10))
+	if sell_water_btn: sell_water_btn.pressed.connect(func(): await _sell("water", 10))
+	if sell_wood_btn: sell_wood_btn.pressed.connect(func(): await _sell("wood", 10))
+	if sell_stone_btn: sell_stone_btn.pressed.connect(func(): await _sell("stone", 10))
 
 	# Polling alle 5 Sekunden für Produktionsstatus
 	poll_timer = Timer.new()

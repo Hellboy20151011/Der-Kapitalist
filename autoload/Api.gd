@@ -116,14 +116,15 @@ func post_json(path: String, body: Dictionary, timeout: float = 30.0) -> Diction
 	var http := HTTPRequest.new()
 	add_child(http)
 	
-	# Timeout-Timer erstellen
+	# Timeout-Timer erstellen (use array for mutable state in lambda)
 	var timer := get_tree().create_timer(timeout)
-	var timed_out := false
+	var timed_out := [false]
 	
 	# Timeout-Handler (vor Request registrieren!)
 	timer.timeout.connect(func():
-		timed_out = true
-		http.cancel_request()
+		timed_out[0] = true
+		if is_instance_valid(http):
+			http.cancel_request()
 	)
 	
 	# Request senden
@@ -137,7 +138,7 @@ func post_json(path: String, body: Dictionary, timeout: float = 30.0) -> Diction
 	http.queue_free()
 	
 	# Check Timeout
-	if timed_out:
+	if timed_out[0]:
 		return {"ok": false, "error": "timeout", "details": "Server antwortet nicht (Timeout nach %ds)" % int(timeout)}
 	
 	# Check Netzwerkfehler (result[0])
@@ -164,14 +165,15 @@ func get_json(path: String, timeout: float = 30.0) -> Dictionary:
 	var http := HTTPRequest.new()
 	add_child(http)
 	
-	# Timeout-Timer erstellen
+	# Timeout-Timer erstellen (use array for mutable state in lambda)
 	var timer := get_tree().create_timer(timeout)
-	var timed_out := false
+	var timed_out := [false]
 	
 	# Timeout-Handler (vor Request registrieren!)
 	timer.timeout.connect(func():
-		timed_out = true
-		http.cancel_request()
+		timed_out[0] = true
+		if is_instance_valid(http):
+			http.cancel_request()
 	)
 	
 	# Request senden
@@ -185,7 +187,7 @@ func get_json(path: String, timeout: float = 30.0) -> Dictionary:
 	http.queue_free()
 	
 	# Check Timeout
-	if timed_out:
+	if timed_out[0]:
 		return {"ok": false, "error": "timeout", "details": "Server antwortet nicht (Timeout nach %ds)" % int(timeout)}
 	
 	# Check Netzwerkfehler (result[0])
