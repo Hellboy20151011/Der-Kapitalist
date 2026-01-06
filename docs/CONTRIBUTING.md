@@ -8,7 +8,7 @@ Vielen Dank für dein Interesse an der Entwicklung von Der-Kapitalist!
 
 - Node.js 20+ und npm
 - PostgreSQL 14+
-- Godot Engine 4.2+
+- Godot Engine 4.5+ (empfohlen: 4.5.1)
 - Git
 
 ### Repository Setup

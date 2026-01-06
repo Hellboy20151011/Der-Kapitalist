@@ -62,8 +62,8 @@ node --check backend/src/app.js 2>/dev/null && echo "   ✓ app.js: No syntax er
 echo ""
 
 echo "7. Documentation check..."
-if [ -f "PRODUCTION_MIGRATION.md" ]; then
-    echo "   ✓ Migration guide exists"
+if [ -f "docs/PRODUCTION_MIGRATION.md" ]; then
+    echo "   ✓ Migration guide exists in docs/ folder"
 else
     echo "   ✗ Migration guide missing"
 fi

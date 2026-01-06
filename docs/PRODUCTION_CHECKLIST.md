@@ -94,7 +94,7 @@ Diese Checkliste hilft dabei, das Projekt sicher in Produktion zu bringen.
   - [ ] SSH-Key-Auth (kein Passwort)
 
 - [ ] **Dependencies installiert**
-  - [ ] Node.js 18+
+  - [ ] Node.js 20+
   - [ ] PostgreSQL 14+
   - [ ] nginx/Caddy
   - [ ] PM2 oder systemd
@@ -336,7 +336,7 @@ Diese Checkliste hilft dabei, das Projekt sicher in Produktion zu bringen.
 
 ## Ressourcen
 
-- [Backend README](backend/README.md)
+- [Backend README](../backend/README.md)
 - [Security Checklist](SECURITY.md)
 - [Quick Start Guide](QUICKSTART.md)
 - [Project Review](REVIEW.md)

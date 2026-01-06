@@ -18,11 +18,14 @@ Ein Spiel wie Kapiland nur für Mobile Clients und als Lernprojekt.
   - **Api.gd** - API communication layer
 
 ### Documentation
-- **[API.md](API.md)** - Complete API endpoint documentation
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Architecture overview and implementation guide
-- **DB_Schema.md** - PostgreSQL Datenbankschema
-- **IMPLEMENTATION_SUMMARY.md** - Implementation details
-- **PRODUCTION_FLOW_DIAGRAM.md** - Production system flow
+All documentation is now organized in the **[docs/](docs/)** folder:
+- **[docs/API.md](docs/API.md)** - Complete API endpoint documentation
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Architecture overview and implementation guide
+- **[docs/DB_Schema.md](docs/DB_Schema.md)** - PostgreSQL Datenbankschema
+- **[docs/DOCS_INDEX.md](docs/DOCS_INDEX.md)** - Complete documentation index
+- **[docs/QUICKSTART.md](docs/QUICKSTART.md)** - Quick start guide
+
+See **[docs/DOCS_INDEX.md](docs/DOCS_INDEX.md)** for a complete overview of all available documentation.
 
 ## Technologie-Stack
 
@@ -59,7 +62,7 @@ Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
 
 ### Frontend Setup (Godot)
 
-1. Installiere Godot Engine 4.2+
+1. Installiere Godot Engine 4.5+ (empfohlen: 4.5.1)
 2. Öffne das Projekt in Godot
 3. (Optional) Konfiguriere API Base URL in Projekt-Einstellungen:
    - Project → Project Settings → Application → Config
@@ -72,7 +75,7 @@ Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
 Das Spiel folgt einer strikten Client-Server-Architektur:
 - **Server**: Single Source of Truth für alle Spielzustände
 - **Client**: UI und User Experience Layer
-- **API**: RESTful JSON API (siehe [API.md](API.md))
+- **API**: RESTful JSON API (siehe [docs/API.md](docs/API.md))
 
 ### Autoloads (Globals)
 - **GameState**: Verwaltet globalen Spielzustand (Token, Coins, Inventory, Buildings)
@@ -141,7 +144,8 @@ if GameState.has_building("well"):
 ```
 
 ### For Further Reading
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Complete architecture guide
-- [API.md](API.md) - API endpoint reference
-- [REVIEW.md](REVIEW.md) - Code review that led to these improvements
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Complete architecture guide
+- [docs/API.md](docs/API.md) - API endpoint reference
+- [docs/REVIEW.md](docs/REVIEW.md) - Code review that led to these improvements
+- [docs/DOCS_INDEX.md](docs/DOCS_INDEX.md) - Complete documentation index
 
