@@ -12,6 +12,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 ### ...das Projekt verstehen 📖
 → [README.md](../README.md) - Projekt-Übersicht  
 → [SUMMARY.md](SUMMARY.md) - Review-Zusammenfassung
+→ [CHANGELOG.md](../CHANGELOG.md) - Änderungshistorie
 
 ### ...das Backend einrichten ⚙️
 → [backend/README.md](../backend/README.md) - Backend-Dokumentation
@@ -38,6 +39,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 | Dokument | Zweck | Lesezeit | Zielgruppe |
 |----------|-------|----------|------------|
 | [README.md](../README.md) | Projekt-Übersicht | 2 Min | Alle |
+| [CHANGELOG.md](../CHANGELOG.md) | Änderungshistorie | 2 Min | Alle |
 | [SUMMARY.md](SUMMARY.md) | Review-Zusammenfassung | 5 Min | Projektleiter, Entwickler |
 | [QUICKSTART.md](QUICKSTART.md) | Schneller Start | 10 Min | Entwickler |
 

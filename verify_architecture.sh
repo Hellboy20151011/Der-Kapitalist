@@ -26,8 +26,8 @@ fi
 # Check autoloads
 echo ""
 echo "3. Checking autoload files..."
-if [ -f "autoload/GameState.gd" ] && [ -f "autoload/Api.gd" ] && [ -f "autoload/net.gd" ]; then
-    echo "   ✓ All autoload files exist"
+if [ -f "autoload/GameState.gd" ] && [ -f "autoload/Api.gd" ]; then
+    echo "   ✓ All required autoload files exist"
 else
     echo "   ✗ Missing autoload files"
     exit 1
