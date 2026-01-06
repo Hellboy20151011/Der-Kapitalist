@@ -75,7 +75,7 @@ Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
 Das Spiel folgt einer strikten Client-Server-Architektur:
 - **Server**: Single Source of Truth für alle Spielzustände
 - **Client**: UI und User Experience Layer
-- **API**: RESTful JSON API (siehe [API.md](API.md))
+- **API**: RESTful JSON API (siehe [docs/API.md](docs/API.md))
 
 ### Autoloads (Globals)
 - **GameState**: Verwaltet globalen Spielzustand (Token, Coins, Inventory, Buildings)
