@@ -54,7 +54,7 @@ Wenn das Backend auf Railway.app läuft, müssen folgende Umgebungsvariablen ges
 
 ```bash
 PORT=8080  # Railway nutzt Port 8080
-ALLOWED_ORIGINS=http://localhost:*,https://your-frontend-domain.netlify.app
+ALLOWED_ORIGINS=http://localhost:*,https://your-frontend-domain.example.com
 NODE_ENV=production
 DATABASE_URL=<your-railway-postgres-url>
 JWT_SECRET=<your-secure-secret-key>

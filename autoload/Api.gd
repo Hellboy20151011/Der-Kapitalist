@@ -50,6 +50,10 @@ extends Node
 const DEFAULT_BASE_URL := "http://localhost:3000"
 const DEFAULT_WS_URL := "ws://localhost:3000"
 
+# Project setting names
+const SETTING_API_BASE_URL := "application/config/api_base_url"
+const SETTING_WS_BASE_URL := "application/config/ws_base_url"
+
 # Legacy compatibility - kept for gradual migration
 var token: String = "":
 	get:
@@ -67,8 +71,8 @@ func _ready() -> void:
 
 func _ensure_project_settings() -> void:
 	## Create project settings if they don't exist
-	_create_project_setting("application/config/api_base_url", DEFAULT_BASE_URL)
-	_create_project_setting("application/config/ws_base_url", DEFAULT_WS_URL)
+	_create_project_setting(SETTING_API_BASE_URL, DEFAULT_BASE_URL)
+	_create_project_setting(SETTING_WS_BASE_URL, DEFAULT_WS_URL)
 	
 	# Save the project settings to disk
 	var save_err = ProjectSettings.save()
@@ -91,9 +95,9 @@ func _create_project_setting(setting_name: String, default_value: String) -> voi
 		
 		# Determine hint string based on setting name
 		var hint_text := ""
-		if setting_name == "application/config/api_base_url":
+		if setting_name == SETTING_API_BASE_URL:
 			hint_text = "Base URL for API requests (e.g., http://localhost:3000 or https://your-app.up.railway.app)"
-		elif setting_name == "application/config/ws_base_url":
+		elif setting_name == SETTING_WS_BASE_URL:
 			hint_text = "Base URL for WebSocket connection (e.g., ws://localhost:3000 or wss://your-app.up.railway.app)"
 		
 		# Add property info for the editor
@@ -107,8 +111,8 @@ func _create_project_setting(setting_name: String, default_value: String) -> voi
 
 func _get_base_url() -> String:
 	# Check for project setting first
-	if ProjectSettings.has_setting("application/config/api_base_url"):
-		return ProjectSettings.get_setting("application/config/api_base_url")
+	if ProjectSettings.has_setting(SETTING_API_BASE_URL):
+		return ProjectSettings.get_setting(SETTING_API_BASE_URL)
 	# Check environment variable (for exports)
 	var env_url = OS.get_environment("API_BASE_URL")
 	if env_url != "":
