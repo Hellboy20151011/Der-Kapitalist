@@ -28,9 +28,10 @@ export const PRODUCTION_TIME = {
 
 // Resource output mapping
 export const BUILDING_RESOURCES = {
+  kraftwerk: 'strom',
   well: 'water',
   lumberjack: 'wood',
-  sandgrube: 'stone',
+  sandgrube: 'sand',
   kalktagebau: 'limestone',
   steinfabrik: 'stone_blocks',
   saegewerk: 'wood_planks',
@@ -40,6 +41,7 @@ export const BUILDING_RESOURCES = {
 
 // Sell prices (multiplier of base value)
 export const SELL_PRICES = {
+  strom: 1.1,
   water: 1.2,
   wood: 1.3,
   stone: 1.4,
@@ -69,20 +71,21 @@ export const PRODUCTION_GROWTH_RATE = 1.15;
 export const MAX_OFFLINE_PRODUCTION_HOURS = 8;
 
 // Resource types
-export const RESOURCE_TYPES = ['water', 'wood', 'stone', 'sand', 'limestone', 'cement', 'concrete', 'stone_blocks', 'wood_planks'];
+export const RESOURCE_TYPES = ['strom', 'water', 'wood', 'stone', 'sand', 'limestone', 'cement', 'concrete', 'stone_blocks', 'wood_planks'];
 
 // Building types
-export const BUILDING_TYPES = ['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'];
+export const BUILDING_TYPES = ['kraftwerk', 'well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'];
 
 // Starting resources for new players
 export const STARTING_COINS = 100n;
-export const STARTING_BUILDINGS = ['well', 'lumberjack', 'sandgrube'];
+export const STARTING_BUILDINGS = ['kraftwerk'];
 
 // Building construction costs
 export const BUILD_COSTS = {
-  lumberjack: { coins: 10n, wood: 10n, stone: 0n },
-  sandgrube: { coins: 10n, wood: 10n, stone: 0n },
-  well: { coins: 10n, wood: 10n, stone: 20n },
+  kraftwerk: { coins: 10n },
+  well: { coins: 20n },
+  lumberjack: { coins: 50n },
+  sandgrube: { coins: 45n },
   kalktagebau: { coins: 50n, wood: 20n, stone: 30n },
   steinfabrik: { coins: 100n, wood: 30n, sand: 50n },
   saegewerk: { coins: 75n, wood: 40n, stone: 20n },
