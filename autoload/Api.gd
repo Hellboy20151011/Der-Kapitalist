@@ -57,11 +57,13 @@ var token: String = "":
 	set(value):
 		GameState.token = value
 
-var base_url := _get_base_url()
+var base_url: String = ""
 
 func _ready() -> void:
 	## Initialize project settings on first run
 	_ensure_project_settings()
+	# Initialize base_url after settings are created
+	base_url = _get_base_url()
 
 func _ensure_project_settings() -> void:
 	## Create project settings if they don't exist
@@ -94,7 +96,7 @@ func _ensure_project_settings() -> void:
 	# Save the project settings to disk
 	var save_err = ProjectSettings.save()
 	if save_err != OK:
-		print("[Api] Warning: Could not save project settings: ", save_err)
+		push_error("[Api] Warning: Could not save project settings. Error code: %d" % save_err)
 
 func _get_base_url() -> String:
 	# Check for project setting first

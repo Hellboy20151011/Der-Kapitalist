@@ -50,7 +50,7 @@ The server will start on `http://localhost:3000` by default.
 
 ## Railway.app Deployment
 
-Wenn das Backend auf Railway.app läuft, müssen folgende Environment Variables gesetzt werden:
+Wenn das Backend auf Railway.app läuft, müssen folgende Umgebungsvariablen gesetzt werden:
 
 ```bash
 PORT=8080  # Railway nutzt Port 8080
