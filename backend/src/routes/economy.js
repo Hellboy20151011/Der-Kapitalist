@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
 import { RESOURCE_TYPES, BUILDING_TYPES } from '../constants.js';
+import { emitToUser } from '../utils/socketHelper.js';
 
 export const economyRouter = express.Router();
 
@@ -97,6 +98,15 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
     );
 
     await client.query('COMMIT');
+    
+    // Emit WebSocket event for state update
+    emitToUser(userId, 'state:update', {
+      type: 'resource_sold',
+      resource_type,
+      quantity: qty.toString(),
+      coins_gained: gain.toString()
+    });
+    
     return res.json({ ok: true });
   } catch (e) {
     await client.query('ROLLBACK');
@@ -175,6 +185,15 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
     );
 
     await client.query('COMMIT');
+    
+    // Emit WebSocket event for state update
+    emitToUser(userId, 'state:update', {
+      type: 'building_upgraded',
+      building_type,
+      new_level: level + 1,
+      cost: cost.toString()
+    });
+    
     return res.json({ ok: true });
   } catch (e) {
     await client.query('ROLLBACK');
@@ -294,6 +313,16 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
     );
 
     await client.query('COMMIT');
+    
+    // Emit WebSocket event for state update
+    emitToUser(userId, 'state:update', {
+      type: 'building_built',
+      building_type,
+      costs: Object.fromEntries(
+        Object.entries(costs).map(([k, v]) => [k, v.toString()])
+      )
+    });
+    
     return res.json({ ok: true });
   } catch (e) {
     await client.query('ROLLBACK');

@@ -35,6 +35,7 @@ import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
 import { MARKET, countActiveListings } from '../services/marketService.js';
 import { RESOURCE_TYPES } from '../constants.js';
+import { broadcastToSubscribers, emitToUser } from '../utils/socketHelper.js';
 
 export const marketRouter = express.Router();
 
@@ -151,6 +152,17 @@ marketRouter.post('/listings', authRequired, async (req, res) => {
     );
 
     await client.query('COMMIT');
+    
+    // Emit WebSocket event for new listing
+    broadcastToSubscribers('market', 'market:new-listing', {
+      id: ins.rows[0].id,
+      resource_type,
+      quantity: qty.toString(),
+      price_per_unit: BigInt(price_per_unit).toString(),
+      fee_percent: MARKET.feePercent,
+      expires_at: ins.rows[0].expires_at
+    });
+    
     return res.json({
       ok: true,
       id: ins.rows[0].id,
@@ -298,6 +310,23 @@ marketRouter.post('/listings/:id/buy', authRequired, async (req, res) => {
     );
 
     await client.query('COMMIT');
+    
+    // Emit WebSocket events for listing sold
+    // Notify seller
+    emitToUser(listing.seller_user_id, 'market:listing-sold', {
+      listing_id: listingIdNum,
+      resource_type: listing.resource_type,
+      quantity: qty.toString(),
+      total: payout.toString(),
+      fee: fee.toString()
+    });
+    
+    // Notify buyer with state update
+    emitToUser(userId, 'state:update', {
+      type: 'market_purchase',
+      coins_spent: total.toString()
+    });
+    
     return res.json({
       ok: true,
       bought: {
