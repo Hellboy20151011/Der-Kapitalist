@@ -842,31 +842,31 @@ func _poll_production() -> void:
 # ============================================================================
 
 func _on_websocket_connected() -> void:
-"""Called when WebSocket connection is established"""
-print("[Main] WebSocket connected")
-_set_status("Echtzeit-Verbindung hergestellt")
-
-# Subscribe to channels
-WebSocketClient.subscribe_to_market()
-WebSocketClient.subscribe_to_production()
+	## Called when WebSocket connection is established
+	print("[Main] WebSocket connected")
+	_set_status("Echtzeit-Verbindung hergestellt")
+	
+	# Subscribe to channels
+	WebSocketClient.subscribe_to_market()
+	WebSocketClient.subscribe_to_production()
 
 func _on_websocket_disconnected() -> void:
-"""Called when WebSocket connection is lost"""
-print("[Main] WebSocket disconnected")
-_set_status("Echtzeit-Verbindung unterbrochen")
+	## Called when WebSocket connection is lost
+	print("[Main] WebSocket disconnected")
+	_set_status("Echtzeit-Verbindung unterbrochen")
 
 func _on_market_new_listing(listing: Dictionary) -> void:
-"""Called when a new market listing is created"""
-print("[Main] New market listing: ", listing)
-
-# If market panel is open, refresh listings
-if market_panel and market_panel.visible:
-await _refresh_market_listings()
+	## Called when a new market listing is created
+	print("[Main] New market listing: ", listing)
+	
+	# If market panel is open, refresh listings
+	if market_panel and market_panel.visible:
+		await _refresh_market_listings()
 
 func _on_production_complete(job: Dictionary) -> void:
-"""Called when production job completes"""
-print("[Main] Production complete: ", job)
-_set_status("Produktion abgeschlossen: %s" % job.get("resource", ""))
-
-# Refresh state to update inventory
-await _sync_state()
+	## Called when production job completes
+	print("[Main] Production complete: ", job)
+	_set_status("Produktion abgeschlossen: %s" % job.get("resource", ""))
+	
+	# Refresh state to update inventory
+	await _sync_state()

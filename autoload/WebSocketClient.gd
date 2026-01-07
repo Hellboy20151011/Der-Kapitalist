@@ -92,7 +92,7 @@ func _process(_delta: float) -> void:
 		_handle_message(message)
 
 func connect_to_server() -> void:
-	"""Initiate connection to WebSocket server"""
+	## Initiate connection to WebSocket server
 	if _socket != null and _socket.get_ready_state() == WebSocketPeer.STATE_OPEN:
 		print("[WebSocket] Already connected")
 		return
@@ -108,7 +108,7 @@ func connect_to_server() -> void:
 		print("[WebSocket] Connecting to ", ws_base_url)
 
 func disconnect_from_server() -> void:
-	"""Close WebSocket connection"""
+	## Close WebSocket connection
 	if _socket != null:
 		_socket.close()
 		_socket = null
@@ -119,33 +119,33 @@ func disconnect_from_server() -> void:
 	_ping_timer.stop()
 
 func subscribe_to_market() -> void:
-	"""Subscribe to market updates"""
+	## Subscribe to market updates
 	if _authenticated:
 		_send_event("subscribe:market", {})
 	else:
 		_pending_subscriptions.append("market")
 
 func subscribe_to_production() -> void:
-	"""Subscribe to production updates"""
+	## Subscribe to production updates
 	if _authenticated:
 		_send_event("subscribe:production", {})
 	else:
 		_pending_subscriptions.append("production")
 
 func _on_connected() -> void:
-	"""Called when WebSocket connection is established"""
+	## Called when WebSocket connection is established
 	print("[WebSocket] Connected to server")
 	_authenticate()
 
 func _on_disconnected() -> void:
-	"""Called when WebSocket connection is closed"""
+	## Called when WebSocket connection is closed
 	print("[WebSocket] Disconnected from server")
 	disconnected_from_server.emit()
 	_ping_timer.stop()
 	_schedule_reconnect()
 
 func _authenticate() -> void:
-	"""Send JWT token for authentication"""
+	## Send JWT token for authentication
 	if GameState.token == "":
 		print("[WebSocket] No token available for authentication")
 		return
@@ -177,7 +177,7 @@ func _authenticate() -> void:
 	connected_to_server.emit()
 
 func _send_event(event_name: String, data: Dictionary) -> void:
-	"""Send event to server"""
+	## Send event to server
 	if _socket == null or _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		print("[WebSocket] Cannot send event, not connected")
 		return
@@ -194,11 +194,11 @@ func _send_event(event_name: String, data: Dictionary) -> void:
 		print("[WebSocket] Failed to send event: ", err)
 
 func _send_ping() -> void:
-	"""Send ping to keep connection alive"""
+	## Send ping to keep connection alive
 	_send_event("ping", {})
 
 func _handle_message(message: String) -> void:
-	"""Handle incoming WebSocket message"""
+	## Handle incoming WebSocket message
 	var json = JSON.new()
 	var parse_result = json.parse(message)
 	
@@ -234,7 +234,7 @@ func _handle_message(message: String) -> void:
 			print("[WebSocket] Unknown event: ", event)
 
 func _schedule_reconnect() -> void:
-	"""Schedule reconnection attempt with exponential backoff"""
+	## Schedule reconnection attempt with exponential backoff
 	if _reconnect_attempts >= _max_reconnect_attempts:
 		print("[WebSocket] Max reconnection attempts reached")
 		connection_error.emit("Max reconnection attempts reached")
@@ -250,10 +250,10 @@ func _schedule_reconnect() -> void:
 	_reconnect_timer.start(delay)
 
 func _attempt_reconnect() -> void:
-	"""Attempt to reconnect to server"""
+	## Attempt to reconnect to server
 	print("[WebSocket] Attempting to reconnect...")
 	connect_to_server()
 
 func is_connected() -> bool:
-	"""Check if connected to server"""
+	## Check if connected to server
 	return _is_connected and _authenticated
