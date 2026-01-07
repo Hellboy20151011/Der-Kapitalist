@@ -73,19 +73,35 @@ func _ensure_project_settings() -> void:
 	# Save the project settings to disk
 	var save_err = ProjectSettings.save()
 	if save_err != OK:
-		push_warning("[Api] Could not save project settings to disk. Error code: %d" % save_err)
+		var error_msg := "Could not save project settings to disk."
+		match save_err:
+			ERR_FILE_CANT_WRITE:
+				error_msg += " File cannot be written (check permissions)."
+			ERR_FILE_CANT_OPEN:
+				error_msg += " File cannot be opened."
+			_:
+				error_msg += " Error code: %d" % save_err
+		push_warning("[Api] " + error_msg)
 
 func _create_project_setting(setting_name: String, default_value: String) -> void:
 	## Helper to create a single project setting if it doesn't exist
 	if not ProjectSettings.has_setting(setting_name):
 		ProjectSettings.set_setting(setting_name, default_value)
 		ProjectSettings.set_initial_value(setting_name, default_value)
+		
+		# Determine hint string based on setting name
+		var hint_text := ""
+		if setting_name == "application/config/api_base_url":
+			hint_text = "Base URL for API requests (e.g., http://localhost:3000 or https://der-kapitalist-production.up.railway.app)"
+		elif setting_name == "application/config/ws_base_url":
+			hint_text = "Base URL for WebSocket connection (e.g., ws://localhost:3000 or wss://der-kapitalist-production.up.railway.app)"
+		
 		# Add property info for the editor
 		ProjectSettings.add_property_info({
 			"name": setting_name,
 			"type": TYPE_STRING,
 			"hint": PROPERTY_HINT_NONE,
-			"hint_string": ""
+			"hint_string": hint_text
 		})
 		print("[Api] Created project setting: ", setting_name, " = ", default_value)
 
