@@ -6,9 +6,10 @@ export const stateRouter = express.Router();
 
 // Production resource mapping
 const BUILDING_RESOURCES = {
+  kraftwerk: 'strom',
   well: 'water',
   lumberjack: 'wood',
-  sandgrube: 'stone'
+  sandgrube: 'sand'
 };
 
 stateRouter.get('/', authRequired, async (req, res) => {

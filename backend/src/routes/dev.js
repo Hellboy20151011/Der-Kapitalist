@@ -44,7 +44,7 @@ devRouter.post('/reset-account', authRequired, async (req, res) => {
     );
 
     // Re-seed starting buildings
-    const buildings = ['well', 'lumberjack', 'sandgrube'];
+    const buildings = ['kraftwerk'];
     for (const b of buildings) {
       await client.query(
         `INSERT INTO buildings(user_id, building_type, level) VALUES ($1, $2, 1)
