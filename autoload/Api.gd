@@ -96,7 +96,7 @@ func _ensure_project_settings() -> void:
 	# Save the project settings to disk
 	var save_err = ProjectSettings.save()
 	if save_err != OK:
-		push_error("[Api] Warning: Could not save project settings. Error code: %d" % save_err)
+		push_warning("[Api] Could not save project settings to disk. Error code: %d" % save_err)
 
 func _get_base_url() -> String:
 	# Check for project setting first
