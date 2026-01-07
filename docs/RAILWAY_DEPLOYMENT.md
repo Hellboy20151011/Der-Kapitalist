@@ -34,7 +34,7 @@ Configures Nixpacks (Railway's build system) to:
 1. Go to https://railway.app
 2. Click "New Project"
 3. Select "Deploy from GitHub repo"
-4. Choose the `Hellboy20151011/Der-Kapitalist` repository
+4. Choose your `Der-Kapitalist` repository (e.g., `your-username/Der-Kapitalist`)
 5. Railway will automatically detect the Node.js backend using the configuration files
 
 ### 2. Add PostgreSQL Database
