@@ -175,6 +175,14 @@ func _ready() -> void:
 	
 	status_label.text = ""
 	
+	# Initialize WebSocket connection
+	if WebSocketClient:
+		WebSocketClient.connect_to_server()
+		WebSocketClient.connected_to_server.connect(_on_websocket_connected)
+		WebSocketClient.disconnected_from_server.connect(_on_websocket_disconnected)
+		WebSocketClient.market_new_listing.connect(_on_market_new_listing)
+		WebSocketClient.production_complete.connect(_on_production_complete)
+	
 	# Dev mode setup
 	if dev_reset_btn:
 		dev_reset_btn.visible = DEV_MODE
@@ -829,3 +837,36 @@ func _poll_production() -> void:
 	if well_producing or lumber_producing or sandgrube_producing:
 		# Refresh state to update timers and check if any production is complete
 		await _sync_state()
+# ============================================================================
+# WEBSOCKET EVENT HANDLERS
+# ============================================================================
+
+func _on_websocket_connected() -> void:
+"""Called when WebSocket connection is established"""
+print("[Main] WebSocket connected")
+_set_status("Echtzeit-Verbindung hergestellt")
+
+# Subscribe to channels
+WebSocketClient.subscribe_to_market()
+WebSocketClient.subscribe_to_production()
+
+func _on_websocket_disconnected() -> void:
+"""Called when WebSocket connection is lost"""
+print("[Main] WebSocket disconnected")
+_set_status("Echtzeit-Verbindung unterbrochen")
+
+func _on_market_new_listing(listing: Dictionary) -> void:
+"""Called when a new market listing is created"""
+print("[Main] New market listing: ", listing)
+
+# If market panel is open, refresh listings
+if market_panel and market_panel.visible:
+await _refresh_market_listings()
+
+func _on_production_complete(job: Dictionary) -> void:
+"""Called when production job completes"""
+print("[Main] Production complete: ", job)
+_set_status("Produktion abgeschlossen: %s" % job.get("resource", ""))
+
+# Refresh state to update inventory
+await _sync_state()
