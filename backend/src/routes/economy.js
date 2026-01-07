@@ -1,3 +1,28 @@
+// ============================================================================
+// ECONOMY ROUTER - Building Construction, Upgrades, and Sales
+// ============================================================================
+// FILE SIZE: 333 lines (reduced from 504 lines)
+// 
+// MODULARITY ASSESSMENT:
+// This file handles economy-related subsystems:
+// 1. Resource selling (/sell) - ~50 lines
+// 2. Building upgrades (/buildings/upgrade) - ~60 lines
+// 3. Building construction (/buildings/build) - ~100 lines
+// 
+// PHASE 1 REFACTORING COMPLETE (2026-01-07):
+// ✅ Removed duplicate production system (~280 lines)
+// - Eliminated confusion about which production system is active
+// - Reduced technical debt and maintenance burden
+// - Frontend continues using /production/* endpoints (production.js)
+// 
+// REMAINING IMPROVEMENTS (Optional):
+// 1. Extract shared logic to services:
+//    - buildingService.js (building operations, cost calculations)
+//    - inventoryService.js (resource checks, updates)
+//    - transactionService.js (atomic coin/resource transfers)
+// 2. This would reduce file size to ~200 lines and improve testability
+// ============================================================================
+
 import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
@@ -5,6 +30,13 @@ import { authRequired } from '../middleware/authRequired.js';
 import { RESOURCE_TYPES, BUILDING_TYPES } from '../constants.js';
 
 export const economyRouter = express.Router();
+
+// ============================================================================
+// RESOURCE SELLING ENDPOINT
+// ============================================================================
+// MODULARITY: This endpoint is well-contained (~50 lines)
+// Could be extracted to sellService.js if economy router gets split
+// ============================================================================
 
 const SELL_PRICES = { 
   strom: 1.1,
@@ -75,6 +107,14 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
   }
 });
 
+// ============================================================================
+// BUILDING UPGRADE SYSTEM
+// ============================================================================
+// MODULARITY: Upgrade logic is straightforward but tightly coupled to economy
+// Consider: buildingService.js with upgradeBuilding(userId, buildingType)
+// This would encapsulate cost calculation and make it reusable
+// ============================================================================
+
 const upgradeSchema = z.object({
   building_type: z.enum(BUILDING_TYPES)
 });
@@ -144,6 +184,22 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
     client.release();
   }
 });
+
+// ============================================================================
+// BUILDING CONSTRUCTION SYSTEM
+// ============================================================================
+// MODULARITY NOTE: This is a complex endpoint (~100 lines) with:
+// - Dynamic resource cost validation
+// - Multi-resource transactions
+// - Cost configuration management
+// 
+// SUGGESTED REFACTORING:
+// Extract to buildingService.js:
+//   - validateBuildingCosts(userId, buildingType, costs)
+//   - deductBuildingCosts(client, userId, costs)
+//   - constructBuilding(userId, buildingType)
+// This would make the endpoint handler much simpler and more testable
+// ============================================================================
 
 // Building costs for construction (not upgrades)
 const BUILD_COSTS = {
@@ -247,258 +303,22 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
     client.release();
   }
 });
+
 // ============================================================================
-// PRODUCTION SYSTEM (Alternative Implementation - Currently Not Used)
+// DUPLICATE PRODUCTION SYSTEM REMOVED - Phase 1 of Refactoring
 // ============================================================================
-// NOTE: This is an alternative production system using production_queue table.
-// The frontend currently uses /production/* endpoints (production.js) instead.
-// This implementation uses production_queue for multi-job queuing.
-// See KNOWN_ISSUES.md for details on the production system duplication.
+// The duplicate queue-based production system has been removed (was lines 315-597).
 // 
-// TODO: Decide whether to:
-// 1. Remove this duplicate production system and consolidate to production.js
-// 2. Migrate frontend to use this queue-based system instead
-// 3. Keep both and clearly document when each should be used
+// DECISION: Removed Option A from assessment
+// - Simplified codebase by removing ~280 lines of unused code
+// - Eliminated confusion about which production system is active
+// - Frontend continues to use /production/* endpoints (production.js)
+// - Active system uses buildings.is_producing, ready_at, producing_qty columns
 // 
-// The duplicate code creates maintenance burden and potential bugs if only one
-// system is updated while the other remains unchanged.
+// CLEANUP NEEDED:
+// - production_queue table can be dropped from database if it exists
+// - Migration script may be needed if table contains data
+// 
+// See: docs/MODULARITY_ASSESSMENT.md for rationale
+// Completed: Phase 1 of refactoring roadmap (2026-01-07)
 // ============================================================================
-// ============================================================================
-
-// Production mechanics:
-// - Well: 1 coin → 1 water in 3 seconds
-// - Lumberjack: 1 coin + 1 water → 10 wood in 5 seconds
-// - Sandgrube: 1 coin + 1 water → 2 sand in 5 seconds
-// - Kalktagebau: 1 coin + 1 water → 2 limestone in 6 seconds
-// - Steinfabrik: 2 coins + 2 sand → 3 stone_blocks in 8 seconds
-// - Saegewerk: 1 coin + 5 wood → 8 wood_planks in 7 seconds
-// - Zementwerk: 2 coins + 2 limestone + 1 sand → 4 cement in 10 seconds
-// - Betonfabrik: 2 coins + 3 cement + 2 sand → 5 concrete in 12 seconds
-const PRODUCTION_CONFIG = {
-  well: { 
-    costs: { coins: 1n, water: 0n }, 
-    duration_seconds: 3, 
-    output_type: 'water', 
-    output_amount: 1n 
-  },
-  lumberjack: { 
-    costs: { coins: 1n, water: 1n }, 
-    duration_seconds: 5, 
-    output_type: 'wood', 
-    output_amount: 10n 
-  },
-  sandgrube: { 
-    costs: { coins: 1n, water: 1n }, 
-    duration_seconds: 5, 
-    output_type: 'sand', 
-    output_amount: 2n 
-  },
-  kalktagebau: { 
-    costs: { coins: 1n, water: 1n }, 
-    duration_seconds: 6, 
-    output_type: 'limestone', 
-    output_amount: 2n 
-  },
-  steinfabrik: { 
-    costs: { coins: 2n, sand: 2n }, 
-    duration_seconds: 8, 
-    output_type: 'stone_blocks', 
-    output_amount: 3n 
-  },
-  saegewerk: { 
-    costs: { coins: 1n, wood: 5n }, 
-    duration_seconds: 7, 
-    output_type: 'wood_planks', 
-    output_amount: 8n 
-  },
-  zementwerk: { 
-    costs: { coins: 2n, limestone: 2n, sand: 1n }, 
-    duration_seconds: 10, 
-    output_type: 'cement', 
-    output_amount: 4n 
-  },
-  betonfabrik: { 
-    costs: { coins: 2n, cement: 3n, sand: 2n }, 
-    duration_seconds: 12, 
-    output_type: 'concrete', 
-    output_amount: 5n 
-  }
-};
-
-const productionStartSchema = z.object({
-  building_type: z.enum(BUILDING_TYPES),
-  quantity: z.number().int().positive().max(1000) // UI slider shows 1-100, but allow higher for flexibility
-});
-
-economyRouter.post('/production/start', authRequired, async (req, res) => {
-  const parsed = productionStartSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'invalid_input', details: parsed.error.issues });
-
-  const userId = req.user.id;
-  const { building_type, quantity } = parsed.data;
-
-  const client = await pool.connect();
-  try {
-    await client.query('SET statement_timeout = 10000');
-    await client.query('BEGIN');
-
-    // Check if building exists
-    const buildingRes = await client.query(
-      `SELECT id FROM buildings WHERE user_id = $1 AND building_type = $2`,
-      [userId, building_type]
-    );
-
-    if (buildingRes.rowCount === 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'building_not_found' });
-    }
-
-    const config = PRODUCTION_CONFIG[building_type];
-    const costs = config.costs;
-    
-    // Calculate total costs for all units
-    const totalCosts = {};
-    for (const [resource, cost] of Object.entries(costs)) {
-      totalCosts[resource] = cost * BigInt(quantity);
-    }
-
-    // Check coins
-    if (totalCosts.coins > 0n) {
-      const stateRes = await client.query(
-        `SELECT coins FROM player_state WHERE user_id = $1 FOR UPDATE`,
-        [userId]
-      );
-      const coins = BigInt(stateRes.rows[0].coins);
-      if (coins < totalCosts.coins) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'not_enough_coins' });
-      }
-    }
-
-    // Check all resource costs dynamically
-    const resourceTypes = Object.keys(costs).filter(k => k !== 'coins');
-    for (const resourceType of resourceTypes) {
-      const required = totalCosts[resourceType];
-      if (required > 0n) {
-        const resourceRes = await client.query(
-          `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = $2 FOR UPDATE`,
-          [userId, resourceType]
-        );
-        const have = resourceRes.rowCount ? BigInt(resourceRes.rows[0].amount) : 0n;
-        if (have < required) {
-          await client.query('ROLLBACK');
-          return res.status(400).json({ error: `not_enough_${resourceType}` });
-        }
-      }
-    }
-
-    // Deduct coins
-    if (totalCosts.coins > 0n) {
-      await client.query(
-        `UPDATE player_state SET coins = coins - $2 WHERE user_id = $1`,
-        [userId, totalCosts.coins.toString()]
-      );
-    }
-
-    // Deduct resources
-    for (const resourceType of resourceTypes) {
-      const required = totalCosts[resourceType];
-      if (required > 0n) {
-        await client.query(
-          `UPDATE inventory SET amount = amount - $2 WHERE user_id = $1 AND resource_type = $3`,
-          [userId, required.toString(), resourceType]
-        );
-      }
-    }
-
-    // Create production job
-    // Total time = duration per unit * quantity
-    const totalDuration = config.duration_seconds * quantity * 1000;
-    const finishesAt = new Date(Date.now() + totalDuration);
-    const prodRes = await client.query(
-      `INSERT INTO production_queue(user_id, building_type, quantity, finishes_at)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, finishes_at`,
-      [userId, building_type, quantity, finishesAt]
-    );
-
-    await client.query('COMMIT');
-    return res.json({ 
-      ok: true, 
-      production_id: prodRes.rows[0].id,
-      finishes_at: prodRes.rows[0].finishes_at
-    });
-  } catch (e) {
-    await client.query('ROLLBACK');
-    console.error('Production start error (queue-based):', e);
-    return res.status(500).json({ error: 'server_error' });
-  } finally {
-    client.release();
-  }
-});
-
-economyRouter.get('/production/status', authRequired, async (req, res) => {
-  const userId = req.user.id;
-  const client = await pool.connect();
-
-  try {
-    await client.query('SET statement_timeout = 10000');
-    await client.query('BEGIN');
-
-    // Check for completed productions
-    const completedRes = await client.query(
-      `SELECT id, building_type, quantity FROM production_queue
-       WHERE user_id = $1 AND status = 'in_progress' AND finishes_at <= now()
-       FOR UPDATE`,
-      [userId]
-    );
-
-    // Process completed productions
-    for (const prod of completedRes.rows) {
-      const config = PRODUCTION_CONFIG[prod.building_type];
-      const totalOutput = config.output_amount * BigInt(prod.quantity);
-
-      // Add output to inventory
-      await client.query(
-        `INSERT INTO inventory(user_id, resource_type, amount)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (user_id, resource_type)
-         DO UPDATE SET amount = inventory.amount + EXCLUDED.amount`,
-        [userId, config.output_type, totalOutput.toString()]
-      );
-
-      // Mark as completed
-      await client.query(
-        `UPDATE production_queue SET status = 'completed' WHERE id = $1`,
-        [prod.id]
-      );
-    }
-
-    // Get current in-progress productions
-    const inProgressRes = await client.query(
-      `SELECT id, building_type, quantity, started_at, finishes_at
-       FROM production_queue
-       WHERE user_id = $1 AND status = 'in_progress'
-       ORDER BY finishes_at`,
-      [userId]
-    );
-
-    await client.query('COMMIT');
-
-    return res.json({
-      in_progress: inProgressRes.rows.map(r => ({
-        id: r.id,
-        building_type: r.building_type,
-        quantity: r.quantity,
-        started_at: r.started_at,
-        finishes_at: r.finishes_at
-      }))
-    });
-  } catch (e) {
-    await client.query('ROLLBACK');
-    console.error('Production status check error:', e);
-    return res.status(500).json({ error: 'server_error' });
-  } finally {
-    client.release();
-  }
-});

@@ -1,3 +1,34 @@
+// ============================================================================
+// MARKET ROUTER - Trading System Implementation
+// ============================================================================
+// FILE SIZE: 251 lines
+// 
+// MODULARITY ASSESSMENT:
+// This file handles the market/trading system with 3 main endpoints:
+// 1. GET /listings - View available market listings (~50 lines)
+// 2. POST /listings - Create new listing (~70 lines)
+// 3. POST /listings/:id/buy - Purchase listing (~130 lines)
+// 
+// OVERALL: Well-structured and focused on a single domain (market)
+// 
+// STRENGTHS:
+// - Clear separation of concerns (one file = one feature)
+// - Each endpoint is reasonably sized
+// - Good use of service layer (marketService.js)
+// - Proper transaction handling with rollbacks
+// 
+// MINOR IMPROVEMENTS POSSIBLE:
+// 1. Extract transaction logic to separate service:
+//    - marketTransactionService.js for buy/sell operations
+//    - Would make testing easier and reduce duplication
+// 2. Consider breaking into:
+//    - marketListingRouter.js (view, create listings)
+//    - marketTransactionRouter.js (buy/sell operations)
+// 
+// CURRENT STATE: Acceptable modularity, no urgent refactoring needed
+// File size is manageable and code is readable
+// ============================================================================
+
 import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
@@ -12,6 +43,13 @@ const createSchema = z.object({
   quantity: z.number().int().positive().max(1_000_000),
   price_per_unit: z.number().int().positive().max(1_000_000_000)
 });
+
+// ============================================================================
+// GET /listings - View Market Listings
+// ============================================================================
+// MODULARITY: Clean and focused endpoint
+// Query parameters allow filtering by resource type
+// ============================================================================
 
 marketRouter.get('/listings', authRequired, async (req, res) => {
   const resourceType = req.query.resource_type;
@@ -50,6 +88,13 @@ marketRouter.get('/listings', authRequired, async (req, res) => {
 
   return res.json({ listings });
 });
+
+// ============================================================================
+// POST /listings - Create Market Listing
+// ============================================================================
+// MODULARITY: Reasonable size (~70 lines) with clear transaction handling
+// Uses marketService.js for business logic (listing limits)
+// ============================================================================
 
 marketRouter.post('/listings', authRequired, async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
@@ -119,6 +164,26 @@ marketRouter.post('/listings', authRequired, async (req, res) => {
     client.release();
   }
 });
+
+// ============================================================================
+// POST /listings/:id/buy - Purchase Market Listing
+// ============================================================================
+// MODULARITY NOTE: This is the largest endpoint in the file (~130 lines)
+// Handles complex transaction logic:
+// - Listing validation and locking
+// - Buyer coin validation
+// - Coin transfer with marketplace fee
+// - Resource transfer
+// - Listing status update
+// 
+// POTENTIAL REFACTORING:
+// Extract to marketTransactionService.js:
+//   - validateListingForPurchase(listingId, buyerId)
+//   - calculateTransactionAmounts(listing)
+//   - executeMarketPurchase(client, listing, buyerId)
+// 
+// This would reduce endpoint to ~40 lines and improve testability
+// ============================================================================
 
 const buySchema = z.object({
   // MVP: ganzes Listing kaufen -> quantity optional, aber wir ignorieren es

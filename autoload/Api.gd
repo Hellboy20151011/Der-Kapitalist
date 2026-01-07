@@ -1,4 +1,47 @@
 extends Node
+# ============================================================================
+# API LAYER - HTTP Communication with Backend
+# ============================================================================
+# FILE SIZE: 238 lines
+# 
+# MODULARITY ASSESSMENT:
+# This file serves as a centralized API client for all backend communication
+# 
+# STRUCTURE:
+# 1. Configuration & Setup (~30 lines)
+# 2. Auth Endpoints (~10 lines)
+# 3. State Endpoints (~5 lines)
+# 4. Economy Endpoints (~15 lines)
+# 5. Production Endpoints (~5 lines)
+# 6. Market Endpoints (~15 lines)
+# 7. Dev Endpoints (~5 lines)
+# 8. HTTP Helper Methods (~110 lines)
+# 9. Error Handling (~40 lines)
+# 
+# STRENGTHS:
+# - Excellent encapsulation of all HTTP logic in one place
+# - Type-safe method signatures for each endpoint
+# - Centralized error handling with German error messages
+# - Timeout handling and network error detection
+# - Good separation between high-level API methods and low-level HTTP
+# 
+# MODULARITY EVALUATION: ★★★★★ Excellent
+# This file is a textbook example of good API layer design:
+# - Single responsibility (HTTP communication)
+# - Clear abstraction boundary
+# - Easy to test and mock
+# - Consistent error handling
+# - Well-organized by feature area
+# 
+# MINOR SUGGESTIONS (optional):
+# 1. Could extract error message mapping to separate file if it grows
+# 2. Could add request retry logic for transient failures
+# 3. Could add request/response logging for debugging
+# 
+# RECOMMENDATION: Keep as-is. This file is well-structured and maintainable.
+# Do NOT split this file - it's at optimal size and organization.
+# ============================================================================
+
 # Note: This is an autoload and globally accessible as 'Api'
 # Do not use class_name with autoloads in Godot 4.5+
 
