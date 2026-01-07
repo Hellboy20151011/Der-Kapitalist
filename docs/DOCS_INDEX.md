@@ -67,6 +67,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 | Dokument | Zweck | Lesezeit | Zielgruppe |
 |----------|-------|----------|------------|
 | [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) | Produktions-Deployment | 20 Min | DevOps, Projektleiter |
+| [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) | Railway.app Deployment | 15 Min | DevOps, Entwickler |
 
 ---
 
@@ -127,6 +128,7 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 ### 🚀 Deployment
 - [QUICKSTART.md](QUICKSTART.md) - Lokales Setup
 - [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) - Produktions-Deployment
+- [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) - Railway.app Deployment
 - [backend/README.md](../backend/README.md) - Server-Konfiguration
 
 ### 🎮 Game-Design
@@ -194,7 +196,8 @@ Willkommen beim Der-Kapitalist Projekt! Diese Datei hilft dir, die richtige Doku
 → [SECURITY.md](SECURITY.md) - Sicherheits-Checkliste
 
 ### Deployment-Problem?
-→ [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)
+→ [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md)  
+→ [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) - Für Railway.app
 
 ### Code-Frage?
 → [REVIEW.md](REVIEW.md) - Code-Analyse
