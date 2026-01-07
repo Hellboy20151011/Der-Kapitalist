@@ -28,6 +28,7 @@ var _socket: WebSocketPeer = null
 var _is_connected: bool = false
 
 # Connection settings
+const SETTING_WS_BASE_URL := "application/config/ws_base_url"
 var ws_base_url: String = "ws://localhost:3000"
 var _reconnect_timer: Timer = null
 var _reconnect_attempts: int = 0
@@ -45,8 +46,8 @@ var _ping_interval: float = 25.0
 
 func _ready() -> void:
 	# Get WebSocket URL from project settings if available
-	if ProjectSettings.has_setting("application/config/ws_base_url"):
-		ws_base_url = ProjectSettings.get_setting("application/config/ws_base_url")
+	if ProjectSettings.has_setting(SETTING_WS_BASE_URL):
+		ws_base_url = ProjectSettings.get_setting(SETTING_WS_BASE_URL)
 	
 	# Check environment variable (for exports)
 	var env_url = OS.get_environment("WS_BASE_URL")

@@ -48,6 +48,11 @@ extends Node
 # Base URL can be configured in project settings or overridden via environment
 # Default to localhost for development
 const DEFAULT_BASE_URL := "http://localhost:3000"
+const DEFAULT_WS_URL := "ws://localhost:3000"
+
+# Project setting names
+const SETTING_API_BASE_URL := "application/config/api_base_url"
+const SETTING_WS_BASE_URL := "application/config/ws_base_url"
 
 # Legacy compatibility - kept for gradual migration
 var token: String = "":
@@ -56,12 +61,58 @@ var token: String = "":
 	set(value):
 		GameState.token = value
 
-var base_url := _get_base_url()
+var base_url: String = ""
+
+func _ready() -> void:
+	## Initialize project settings on first run
+	_ensure_project_settings()
+	# Initialize base_url after settings are created
+	base_url = _get_base_url()
+
+func _ensure_project_settings() -> void:
+	## Create project settings if they don't exist
+	_create_project_setting(SETTING_API_BASE_URL, DEFAULT_BASE_URL)
+	_create_project_setting(SETTING_WS_BASE_URL, DEFAULT_WS_URL)
+	
+	# Save the project settings to disk
+	var save_err = ProjectSettings.save()
+	if save_err != OK:
+		var error_msg := "Could not save project settings to disk."
+		match save_err:
+			ERR_FILE_CANT_WRITE:
+				error_msg += " File cannot be written (check permissions)."
+			ERR_FILE_CANT_OPEN:
+				error_msg += " File cannot be opened."
+			_:
+				error_msg += " Error code: %d" % save_err
+		push_warning("[Api] " + error_msg)
+
+func _create_project_setting(setting_name: String, default_value: String) -> void:
+	## Helper to create a single project setting if it doesn't exist
+	if not ProjectSettings.has_setting(setting_name):
+		ProjectSettings.set_setting(setting_name, default_value)
+		ProjectSettings.set_initial_value(setting_name, default_value)
+		
+		# Determine hint string based on setting name
+		var hint_text := ""
+		if setting_name == SETTING_API_BASE_URL:
+			hint_text = "Base URL for API requests (e.g., http://localhost:3000 or https://your-domain.com)"
+		elif setting_name == SETTING_WS_BASE_URL:
+			hint_text = "Base URL for WebSocket connection (e.g., ws://localhost:3000 or wss://your-domain.com)"
+		
+		# Add property info for the editor
+		ProjectSettings.add_property_info({
+			"name": setting_name,
+			"type": TYPE_STRING,
+			"hint": PROPERTY_HINT_NONE,
+			"hint_string": hint_text
+		})
+		print("[Api] Created project setting: ", setting_name, " = ", default_value)
 
 func _get_base_url() -> String:
 	# Check for project setting first
-	if ProjectSettings.has_setting("application/config/api_base_url"):
-		return ProjectSettings.get_setting("application/config/api_base_url")
+	if ProjectSettings.has_setting(SETTING_API_BASE_URL):
+		return ProjectSettings.get_setting(SETTING_API_BASE_URL)
 	# Check environment variable (for exports)
 	var env_url = OS.get_environment("API_BASE_URL")
 	if env_url != "":
