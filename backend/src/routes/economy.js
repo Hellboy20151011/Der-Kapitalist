@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
+import { RESOURCE_TYPES, BUILDING_TYPES } from '../constants.js';
 
 export const economyRouter = express.Router();
 
@@ -19,7 +20,7 @@ const SELL_PRICES = {
 };
 
 const sellSchema = z.object({
-  resource_type: z.enum(['strom', 'water', 'wood', 'stone', 'sand', 'limestone', 'cement', 'concrete', 'stone_blocks', 'wood_planks']),
+  resource_type: z.enum(RESOURCE_TYPES),
   quantity: z.number().int().positive().max(1_000_000)
 });
 
@@ -75,7 +76,7 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
 });
 
 const upgradeSchema = z.object({
-  building_type: z.enum(['kraftwerk', 'well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'])
+  building_type: z.enum(BUILDING_TYPES)
 });
 
 // Simple Kostenkurve: 100 * 1.6^(level-1)
@@ -158,7 +159,7 @@ const BUILD_COSTS = {
 };
 
 const buildSchema = z.object({
-  building_type: z.enum(['kraftwerk', 'well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'])
+  building_type: z.enum(BUILDING_TYPES)
 });
 
 economyRouter.post('/buildings/build', authRequired, async (req, res) => {
@@ -325,7 +326,7 @@ const PRODUCTION_CONFIG = {
 };
 
 const productionStartSchema = z.object({
-  building_type: z.enum(['kraftwerk', 'well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik']),
+  building_type: z.enum(BUILDING_TYPES),
   quantity: z.number().int().positive().max(1000) // UI slider shows 1-100, but allow higher for flexibility
 });
 
