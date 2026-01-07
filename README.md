@@ -34,10 +34,12 @@ See **[docs/DOCS_INDEX.md](docs/DOCS_INDEX.md)** for a complete overview of all 
 - PostgreSQL Datenbank
 - JWT Authentifizierung
 - bcrypt für Passwort-Hashing
+- Socket.io für WebSocket-Kommunikation
 
 ### Frontend
 - Godot Engine 4+
 - GDScript
+- WebSocket Client für Echtzeit-Updates
 
 ## Setup
 
@@ -67,7 +69,44 @@ Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
 3. (Optional) Konfiguriere API Base URL in Projekt-Einstellungen:
    - Project → Project Settings → Application → Config
    - Füge `api_base_url` Setting hinzu mit deiner Backend URL
+   - Füge `ws_base_url` Setting hinzu für WebSocket URL (z.B. `ws://localhost:3000`)
 4. Drücke F5 zum Starten
+
+### WebSocket Setup
+
+Das Spiel nutzt WebSockets für Echtzeit-Updates wie:
+- Neue Markt-Listings erscheinen sofort bei allen Spielern
+- Produktions-Abschluss-Benachrichtigungen
+- Sofortige Synchronisation bei Verkäufen
+
+**Backend Konfiguration:**
+
+Die WebSocket-Verbindung läuft über denselben Port wie die HTTP-API. In `.env`:
+```
+PORT=3000
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+WebSocket URL: `ws://localhost:3000` (Entwicklung) oder `wss://yourdomain.com` (Produktion)
+
+**Frontend Konfiguration:**
+
+Der WebSocketClient ist als Autoload konfiguriert und verbindet sich automatisch beim Start.
+
+**WebSocket-Verbindung testen:**
+
+1. Starte Backend: `cd backend && npm start`
+2. Öffne zwei Godot-Instanzen oder zwei Browser
+3. Melde dich mit verschiedenen Accounts an
+4. Erstelle ein Markt-Listing in Client A
+5. Client B sollte das neue Listing sofort sehen
+
+Bei Verbindungsproblemen:
+- Prüfe, dass Backend läuft und Port 3000 frei ist
+- Prüfe Browser-Konsole oder Godot-Ausgabe für WebSocket-Fehler
+- WebSocket fällt automatisch auf Polling zurück wenn Verbindung fehlschlägt
+
+Siehe **[docs/API.md#websocket-events](docs/API.md)** für vollständige WebSocket-Dokumentation.
 
 ## Architektur
 
@@ -78,6 +117,7 @@ Das Spiel folgt einer strikten Client-Server-Architektur:
 - **API**: RESTful JSON API (siehe [docs/API.md](docs/API.md))
 
 ### Autoloads (Globals)
+- **WebSocketClient**: Verwaltet WebSocket-Verbindung für Echtzeit-Updates
 - **GameState**: Verwaltet globalen Spielzustand (Token, Coins, Inventory, Buildings)
 - **Api**: Abstraktionsschicht für alle API-Aufrufe
 

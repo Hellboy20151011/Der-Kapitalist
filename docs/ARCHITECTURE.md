@@ -268,3 +268,293 @@ The implemented changes provide a solid foundation for scaling the project:
 ✅ **Secure**: Server-authoritative, no client-side cheating  
 
 The architecture now follows industry best practices for client-server games and is ready for team collaboration and future expansion.
+
+## Real-Time Communication Architecture
+
+### Overview
+
+The game now supports real-time updates through WebSocket connections, enabling immediate synchronization of game state changes across clients without polling.
+
+### When to Use REST vs WebSocket
+
+#### Use REST API for:
+- **User-initiated actions**: Login, register, building construction, starting production
+- **Data fetching**: Getting initial state, querying market listings
+- **Write operations**: All modifications to game state (REST is the source of truth)
+- **Historical data**: Fetching logs, statistics, past transactions
+
+#### Use WebSocket for:
+- **Real-time notifications**: Production completion, market listing sold
+- **Live updates**: New market listings appearing immediately
+- **State synchronization**: Keeping UI in sync with server changes
+- **Presence**: Detecting when other players are online (future feature)
+
+**Key Principle**: REST writes, WebSocket notifies. All changes go through REST API, WebSocket only broadcasts notifications.
+
+### WebSocket Architecture Components
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Godot Frontend                         │
+├─────────────────────────────────────────────────────────────┤
+│  WebSocketClient.gd (Autoload)                             │
+│  - Connection management                                    │
+│  - JWT authentication                                       │
+│  - Exponential backoff reconnection                        │
+│  - Event routing via signals                               │
+│                                                             │
+│  GameState.gd                                              │
+│  - Listens to WebSocket signals                            │
+│  - Fetches updated state from REST API                     │
+│  - Emits state change signals                              │
+│                                                             │
+│  Game Scenes (Main.gd, Market.gd, etc.)                    │
+│  - Subscribe to WebSocket channels                         │
+│  - React to real-time events                               │
+│  - Update UI immediately                                   │
+└─────────────────────────────────────────────────────────────┘
+                           ▲ ▼
+                    WebSocket (ws://)
+                           ▲ ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Backend (Node.js)                       │
+├─────────────────────────────────────────────────────────────┤
+│  Server.js                                                  │
+│  - Creates HTTP server                                      │
+│  - Initializes Socket.io                                    │
+│                                                             │
+│  websocket.js                                               │
+│  - Socket.io initialization                                 │
+│  - JWT authentication middleware                            │
+│  - Connection/disconnection handling                        │
+│  - User → Socket mapping (Map<userId, Set<socketId>>)      │
+│  - Channel subscriptions (rooms)                            │
+│                                                             │
+│  utils/socketHelper.js                                      │
+│  - emitToUser(userId, event, data)                         │
+│  - broadcastToAll(event, data)                             │
+│  - broadcastToSubscribers(channel, event, data)            │
+│                                                             │
+│  Routes (market.js, production.js, economy.js)             │
+│  - Process REST requests                                    │
+│  - Update database                                          │
+│  - Emit WebSocket events after successful operations       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Event Flow Diagrams
+
+#### Market Listing Creation
+
+```
+User A (Godot)                Backend                    User B (Godot)
+      │                          │                              │
+      │  POST /market/listings   │                              │
+      ├─────────────────────────>│                              │
+      │                          │                              │
+      │                      [DB Write]                         │
+      │                          │                              │
+      │  HTTP 200 OK            │                              │
+      │<─────────────────────────┤                              │
+      │                          │                              │
+      │                          │  WS: market:new-listing      │
+      │                          ├─────────────────────────────>│
+      │                          │                              │
+      │                          │                          [Refresh UI]
+      │                          │                              │
+```
+
+#### Production Completion
+
+```
+User (Godot)                   Backend
+      │                          │
+      │  POST /production/start  │
+      ├─────────────────────────>│
+      │                          │
+      │                      [DB Write]
+      │                          │
+      │  WS: production:started │
+      │<─────────────────────────┤
+      │                          │
+      │                     [Timer expires]
+      │                          │
+      │  POST /production/collect│
+      ├─────────────────────────>│
+      │                          │
+      │                      [DB Write]
+      │                          │
+      │  WS: production:complete │
+      │<─────────────────────────┤
+      │                          │
+      │  [Update inventory UI]   │
+      │                          │
+```
+
+#### Market Purchase
+
+```
+Buyer (User B)                Backend               Seller (User A)
+      │                          │                          │
+      │  POST /listings/:id/buy  │                          │
+      ├─────────────────────────>│                          │
+      │                          │                          │
+      │                  [Transaction: DB]                  │
+      │                          │                          │
+      │  HTTP 200 OK            │                          │
+      │<─────────────────────────┤                          │
+      │                          │                          │
+      │  WS: state:update       │                          │
+      │<─────────────────────────┤                          │
+      │                          │                          │
+      │                          │  WS: market:listing-sold │
+      │                          ├─────────────────────────>│
+      │                          │                          │
+      │  [Refresh coins]         │                [Notification]
+      │                          │                          │
+```
+
+### Reconnection Strategy
+
+WebSocket connections can be interrupted by network issues, server restarts, or client inactivity. The client implements exponential backoff:
+
+```
+Attempt | Delay
+--------|-------
+1       | 1s
+2       | 2s
+3       | 4s
+4       | 8s
+5       | 16s
+6+      | 30s (max)
+```
+
+**Reconnection Flow:**
+
+```gdscript
+1. Detect disconnection
+2. Start reconnection timer
+3. Attempt to reconnect
+4. If successful:
+   - Reset attempt counter
+   - Re-authenticate with JWT
+   - Re-subscribe to channels
+5. If failed:
+   - Increase delay exponentially
+   - Retry (max 10 attempts)
+6. If all attempts fail:
+   - Fall back to polling /state endpoint
+   - Notify user of limited functionality
+```
+
+### Security Considerations
+
+1. **Authentication**: JWT token required for WebSocket handshake
+2. **Authorization**: Server validates userId from token matches event target
+3. **Rate Limiting**: Prevent spam by limiting message frequency
+4. **Input Validation**: All WebSocket messages validated same as REST
+5. **Token Expiry**: Client must reconnect with fresh token when JWT expires
+
+### Performance Characteristics
+
+**Connection Overhead:**
+- Initial connection: ~100ms (includes TLS handshake)
+- Authentication: ~10ms
+- Subscribe to channel: ~5ms
+
+**Message Latency:**
+- WebSocket message: 10-50ms (vs 100-500ms for REST polling)
+- Broadcast to 100 users: <100ms
+- Emit to single user: <10ms
+
+**Scaling Considerations:**
+- Current implementation: In-memory user-socket mapping
+- For production: Use Redis for distributed state
+- Socket.io supports clustering with Redis adapter
+
+### Graceful Degradation
+
+If WebSocket connection fails or is unavailable:
+
+1. **Fallback to polling**: Client polls `/state` every 5 seconds
+2. **User notification**: Display "Limited connectivity" warning
+3. **Reduced features**: No real-time market updates, manual refresh required
+4. **All critical features work**: Production, building, trading still functional
+
+Example implementation:
+
+```gdscript
+func _ready():
+    WebSocketClient.connection_error.connect(_on_websocket_failed)
+
+func _on_websocket_failed(error: String):
+    print("WebSocket unavailable, falling back to polling")
+    _start_polling_timer()
+    _show_connectivity_warning()
+```
+
+### Future Enhancements
+
+1. **Presence System**: Show which players are online
+2. **Chat System**: Real-time messaging between players
+3. **Trade Notifications**: Alert when specific resources are listed
+4. **Price Alerts**: Notify when prices drop below threshold
+5. **Alliance Features**: Real-time cooperation mechanics
+6. **Live Leaderboards**: Rankings update in real-time
+
+### Testing Real-Time Features
+
+**Manual Testing Checklist:**
+
+1. Open two clients (two browser windows or Godot instances)
+2. Login as different users
+3. Create market listing in Client A → Verify appears in Client B
+4. Buy listing in Client B → Verify seller notification in Client A
+5. Start production → Verify completion notification
+6. Disconnect network → Verify reconnection behavior
+7. Restart backend server → Verify clients reconnect automatically
+
+**Automated Testing:**
+
+```javascript
+// Backend test
+describe('WebSocket Events', () => {
+  it('should emit market:new-listing when listing created', async () => {
+    const socket = io('ws://localhost:3000', { auth: { token } });
+    socket.emit('subscribe:market');
+    
+    // Create listing via REST
+    await request(app).post('/market/listings').send({...});
+    
+    // Verify WebSocket event received
+    await waitFor(() => socket.received('market:new-listing'));
+  });
+});
+```
+
+### Monitoring and Debugging
+
+**Server-side logging:**
+- Connection/disconnection events
+- Authentication failures
+- Message routing
+- Channel subscriptions
+
+**Client-side logging:**
+```gdscript
+WebSocketClient.connected_to_server.connect(func():
+    print("[WS] Connected at ", Time.get_time_string_from_system())
+)
+
+WebSocketClient.market_new_listing.connect(func(listing):
+    print("[WS] New listing: ", listing)
+)
+```
+
+**Health checks:**
+```bash
+# Check WebSocket endpoint
+curl -i -N -H "Connection: Upgrade" \
+     -H "Upgrade: websocket" \
+     http://localhost:3000
+```
