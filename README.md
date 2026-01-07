@@ -24,6 +24,7 @@ All documentation is now organized in the **[docs/](docs/)** folder:
 - **[docs/DB_Schema.md](docs/DB_Schema.md)** - PostgreSQL Datenbankschema
 - **[docs/DOCS_INDEX.md](docs/DOCS_INDEX.md)** - Complete documentation index
 - **[docs/QUICKSTART.md](docs/QUICKSTART.md)** - Quick start guide
+- **[docs/RAILWAY_DEPLOYMENT.md](docs/RAILWAY_DEPLOYMENT.md)** - Railway.app deployment guide
 
 See **[docs/DOCS_INDEX.md](docs/DOCS_INDEX.md)** for a complete overview of all available documentation.
 
