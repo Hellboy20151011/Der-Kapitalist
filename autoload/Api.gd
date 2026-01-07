@@ -67,36 +67,27 @@ func _ready() -> void:
 
 func _ensure_project_settings() -> void:
 	## Create project settings if they don't exist
-	# API Base URL setting
-	if not ProjectSettings.has_setting("application/config/api_base_url"):
-		ProjectSettings.set_setting("application/config/api_base_url", DEFAULT_BASE_URL)
-		ProjectSettings.set_initial_value("application/config/api_base_url", DEFAULT_BASE_URL)
-		# Add property info for the editor
-		ProjectSettings.add_property_info({
-			"name": "application/config/api_base_url",
-			"type": TYPE_STRING,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": ""
-		})
-		print("[Api] Created project setting: application/config/api_base_url = ", DEFAULT_BASE_URL)
-	
-	# WebSocket Base URL setting
-	if not ProjectSettings.has_setting("application/config/ws_base_url"):
-		ProjectSettings.set_setting("application/config/ws_base_url", DEFAULT_WS_URL)
-		ProjectSettings.set_initial_value("application/config/ws_base_url", DEFAULT_WS_URL)
-		# Add property info for the editor
-		ProjectSettings.add_property_info({
-			"name": "application/config/ws_base_url",
-			"type": TYPE_STRING,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": ""
-		})
-		print("[Api] Created project setting: application/config/ws_base_url = ", DEFAULT_WS_URL)
+	_create_project_setting("application/config/api_base_url", DEFAULT_BASE_URL)
+	_create_project_setting("application/config/ws_base_url", DEFAULT_WS_URL)
 	
 	# Save the project settings to disk
 	var save_err = ProjectSettings.save()
 	if save_err != OK:
 		push_warning("[Api] Could not save project settings to disk. Error code: %d" % save_err)
+
+func _create_project_setting(setting_name: String, default_value: String) -> void:
+	## Helper to create a single project setting if it doesn't exist
+	if not ProjectSettings.has_setting(setting_name):
+		ProjectSettings.set_setting(setting_name, default_value)
+		ProjectSettings.set_initial_value(setting_name, default_value)
+		# Add property info for the editor
+		ProjectSettings.add_property_info({
+			"name": setting_name,
+			"type": TYPE_STRING,
+			"hint": PROPERTY_HINT_NONE,
+			"hint_string": ""
+		})
+		print("[Api] Created project setting: ", setting_name, " = ", default_value)
 
 func _get_base_url() -> String:
 	# Check for project setting first
