@@ -33,25 +33,12 @@ extends Control
 @export var DEV_MODE: bool = true
 
 # ============================================================================
-# CONFIGURATION CONSTANTS
+# CONFIGURATION CONSTANTS - NOW IN GameConfig AUTOLOAD
 # ============================================================================
-# MODULARITY NOTE: These constants should be moved to a separate config file
-# Suggested: res://autoload/GameConfig.gd
-# This would centralize all game constants and make them easier to maintain
+# REFACTORING NOTE: Constants have been moved to GameConfig autoload
+# Access via: GameConfig.PRODUCTION_COSTS, GameConfig.RESOURCE_ICONS, etc.
+# This centralizes game configuration and makes it easier to maintain
 # ============================================================================
-
-# Production costs (must match backend CONFIG)
-const PRODUCTION_COSTS = {
-	"well": 1,
-	"lumberjack": 2,
-	"sandgrube": 3
-}
-
-# UI Constants
-const STATUS_MESSAGE_TIMEOUT = 5.0
-const RESOURCE_ICONS = {"water": "💧", "wood": "🪓", "stone": "🪨", "sand": "🏖️"}
-const RESOURCE_NAMES = {"water": "Wasser", "wood": "Holz", "stone": "Stein", "sand": "Sand"}
-const RESOURCE_TYPES = ["water", "wood", "stone", "sand"]
 
 # ============================================================================
 # UI NODE REFERENCES
@@ -369,7 +356,7 @@ func _add_listing_item(listing: Dictionary) -> void:
 	var res_type = listing.get("resource_type", "")
 	
 	var title_label = Label.new()
-	title_label.text = "%s %s" % [RESOURCE_ICONS.get(res_type, "📦"), RESOURCE_NAMES.get(res_type, res_type)]
+	title_label.text = "%s %s" % [GameConfig.get_resource_icon(res_type), GameConfig.get_resource_name(res_type)]
 	title_label.add_theme_font_size_override("font_size", 16)
 	info_vbox.add_child(title_label)
 	
@@ -422,13 +409,13 @@ func _create_market_listing() -> void:
 	
 	# Validate array bounds before accessing
 	var selected_idx = resource_type_option.selected
-	if selected_idx < 0 or selected_idx >= RESOURCE_TYPES.size():
+	if selected_idx < 0 or selected_idx >= GameConfig.RESOURCE_TYPES.size():
 		_set_status("❌ Ungültiger Ressourcentyp", true)
 		_show_loading(false)
 		_disable_buttons(false)
 		return
 	
-	var resource_type = RESOURCE_TYPES[selected_idx]
+	var resource_type = GameConfig.RESOURCE_TYPES[selected_idx]
 	var quantity = int(quantity_input.value)
 	var price_per_unit = int(price_input.value)
 	
@@ -476,7 +463,7 @@ func _set_status(msg: String, is_result: bool = false) -> void:
 	status_label.text = msg
 	# Auto-clear result messages after timeout
 	if is_result:
-		await get_tree().create_timer(STATUS_MESSAGE_TIMEOUT).timeout
+		await get_tree().create_timer(GameConfig.STATUS_MESSAGE_TIMEOUT).timeout
 		if status_label.text == msg:
 			status_label.text = ""
 
@@ -704,7 +691,7 @@ func _update_slider_max(slider: HSlider, building_type: String, has_building: bo
 	if not has_building:
 		return
 	
-	var cost = PRODUCTION_COSTS[building_type]
+	var cost = GameConfig.get_production_cost(building_type)
 	var max_qty = max(1, int(float(current_coins) / float(cost)))  # Use float division for accuracy
 	slider.max_value = float(max_qty)
 	if not is_producing:
@@ -739,7 +726,7 @@ func _update_building_ui() -> void:
 	
 	# Update production controls based on ownership and production status
 	# Well
-	var well_cost = PRODUCTION_COSTS["well"]
+	var well_cost = GameConfig.get_production_cost("well")
 	well_slider.editable = has_well and not well_producing and current_coins >= well_cost
 	if well_producing:
 		if well_ready_at:
@@ -760,7 +747,7 @@ func _update_building_ui() -> void:
 		well_produce_btn.disabled = not has_well or current_coins < well_cost
 	
 	# Lumberjack
-	var lumber_cost = PRODUCTION_COSTS["lumberjack"]
+	var lumber_cost = GameConfig.get_production_cost("lumberjack")
 	lumber_slider.editable = has_lumberjack and not lumber_producing and current_coins >= lumber_cost
 	if lumber_producing:
 		if lumber_ready_at:
@@ -781,7 +768,7 @@ func _update_building_ui() -> void:
 		lumber_produce_btn.disabled = not has_lumberjack or current_coins < lumber_cost
 	
 	# Sandgrube
-	var stone_cost = PRODUCTION_COSTS["sandgrube"]
+	var stone_cost = GameConfig.get_production_cost("sandgrube")
 	stone_slider.editable = has_sandgrube and not sandgrube_producing and current_coins >= stone_cost
 	if sandgrube_producing:
 		if sandgrube_ready_at:
