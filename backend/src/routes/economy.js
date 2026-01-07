@@ -2,10 +2,12 @@ import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
+import { RESOURCE_TYPES, BUILDING_TYPES } from '../constants.js';
 
 export const economyRouter = express.Router();
 
 const SELL_PRICES = { 
+  strom: 1.1,
   water: 1.2, 
   wood: 1.3, 
   stone: 1.4,
@@ -18,7 +20,7 @@ const SELL_PRICES = {
 };
 
 const sellSchema = z.object({
-  resource_type: z.enum(['water', 'wood', 'stone', 'sand', 'limestone', 'cement', 'concrete', 'stone_blocks', 'wood_planks']),
+  resource_type: z.enum(RESOURCE_TYPES),
   quantity: z.number().int().positive().max(1_000_000)
 });
 
@@ -74,7 +76,7 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
 });
 
 const upgradeSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'])
+  building_type: z.enum(BUILDING_TYPES)
 });
 
 // Simple Kostenkurve: 100 * 1.6^(level-1)
@@ -145,9 +147,10 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
 
 // Building costs for construction (not upgrades)
 const BUILD_COSTS = {
-  lumberjack: { coins: 10n, wood: 10n, stone: 0n },
-  sandgrube: { coins: 10n, wood: 10n, stone: 0n },
-  well: { coins: 10n, wood: 10n, stone: 20n },
+  kraftwerk: { coins: 10n },
+  well: { coins: 20n },
+  lumberjack: { coins: 50n },
+  sandgrube: { coins: 45n },
   kalktagebau: { coins: 50n, wood: 20n, stone: 30n },
   steinfabrik: { coins: 100n, wood: 30n, sand: 50n },
   saegewerk: { coins: 75n, wood: 40n, stone: 20n },
@@ -156,7 +159,7 @@ const BUILD_COSTS = {
 };
 
 const buildSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik'])
+  building_type: z.enum(BUILDING_TYPES)
 });
 
 economyRouter.post('/buildings/build', authRequired, async (req, res) => {
@@ -323,7 +326,7 @@ const PRODUCTION_CONFIG = {
 };
 
 const productionStartSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'sandgrube', 'kalktagebau', 'steinfabrik', 'saegewerk', 'zementwerk', 'betonfabrik']),
+  building_type: z.enum(BUILDING_TYPES),
   quantity: z.number().int().positive().max(1000) // UI slider shows 1-100, but allow higher for flexibility
 });
 

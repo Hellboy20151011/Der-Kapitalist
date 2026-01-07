@@ -6,19 +6,44 @@ import { authRequired } from '../middleware/authRequired.js';
 export const productionRouter = express.Router();
 
 /**
- * Konfiguration (MVP)
- * well: 1 water / 3s / 1 coin
- * lumberjack: 1 wood / 5s / 2 coins
- * sandgrube: 1 stone / 7s / 3 coins
+ * Production Configuration
+ * Note: All costs and outputs are stored in database as bigint (multiplied by 10 to preserve 1 decimal)
+ * Example: 0.2 coins is stored as 2, 1.2 sand is stored as 12
+ * 
+ * kraftwerk: 1 strom for 0.2 coins in 0.3s
+ * well: 1 water for 0.5 strom in 0.5s
+ * lumberjack: 2 wood for 0.1 strom + 0.2 water in 5s
+ * sandgrube: 1.2 sand for 0.3 strom + 0.1 water in 3.2s
  */
 const CONFIG = {
-  well: { resource: 'water', seconds_per_unit: 3, coin_cost_per_unit: 1n },
-  lumberjack: { resource: 'wood', seconds_per_unit: 5, coin_cost_per_unit: 2n },
-  sandgrube: { resource: 'stone', seconds_per_unit: 7, coin_cost_per_unit: 3n }
+  kraftwerk: { 
+    resource: 'strom', 
+    output_per_unit: 10,  // 1.0 stored as 10
+    seconds_per_unit: 0.3, 
+    costs: { coins: 2 }  // 0.2 stored as 2
+  },
+  well: { 
+    resource: 'water', 
+    output_per_unit: 10,  // 1.0 stored as 10
+    seconds_per_unit: 0.5, 
+    costs: { strom: 5 }  // 0.5 stored as 5
+  },
+  lumberjack: { 
+    resource: 'wood', 
+    output_per_unit: 20,  // 2.0 stored as 20
+    seconds_per_unit: 5, 
+    costs: { strom: 1, water: 2 }  // 0.1 -> 1, 0.2 -> 2
+  },
+  sandgrube: { 
+    resource: 'sand', 
+    output_per_unit: 12,  // 1.2 stored as 12
+    seconds_per_unit: 3.2, 
+    costs: { strom: 3, water: 1 }  // 0.3 -> 3, 0.1 -> 1
+  }
 };
 
 const startSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'sandgrube']),
+  building_type: z.enum(['kraftwerk', 'well', 'lumberjack', 'sandgrube']),
   quantity: z.number().int().positive().max(1_000_000)
 });
 
@@ -30,13 +55,11 @@ productionRouter.post('/start', authRequired, async (req, res) => {
   const { building_type, quantity } = parsed.data;
 
   const cfg = CONFIG[building_type];
-  const qty = BigInt(quantity);
-  const totalCost = qty * cfg.coin_cost_per_unit;
   
-  // Validate cost doesn't overflow
-  const MAX_COINS = BigInt('9223372036854775807');
-  if (totalCost > MAX_COINS) {
-    return res.status(400).json({ error: 'production_cost_too_large' });
+  // Calculate total costs (all values are already scaled by 10)
+  const totalCosts = {};
+  for (const [costType, costPerUnit] of Object.entries(cfg.costs)) {
+    totalCosts[costType] = BigInt(costPerUnit * quantity);
   }
 
   const client = await pool.connect();
@@ -65,26 +88,51 @@ productionRouter.post('/start', authRequired, async (req, res) => {
       return res.status(400).json({ error: 'building_busy' });
     }
 
-    // Coins locken
+    // Lock player state for coins
     const sRes = await client.query(
       `SELECT coins FROM player_state WHERE user_id = $1 FOR UPDATE`,
       [userId]
     );
 
-    const coins = BigInt(sRes.rows[0].coins);
-    if (coins < totalCost) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'not_enough_coins' });
+    // Check and deduct coins if needed
+    if (totalCosts.coins) {
+      const coins = BigInt(sRes.rows[0].coins);
+      if (coins < totalCosts.coins) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'not_enough_coins' });
+      }
+      await client.query(
+        `UPDATE player_state SET coins = coins - $2 WHERE user_id = $1`,
+        [userId, totalCosts.coins.toString()]
+      );
     }
 
-    // Coins abziehen
-    await client.query(
-      `UPDATE player_state SET coins = coins - $2 WHERE user_id = $1`,
-      [userId, totalCost.toString()]
-    );
+    // Check and deduct resources (strom, water, etc.)
+    for (const [resourceType, cost] of Object.entries(totalCosts)) {
+      if (resourceType === 'coins') continue; // Already handled
+      
+      const resourceRes = await client.query(
+        `SELECT amount FROM inventory WHERE user_id = $1 AND resource_type = $2 FOR UPDATE`,
+        [userId, resourceType]
+      );
+      
+      const have = resourceRes.rowCount ? BigInt(resourceRes.rows[0].amount) : 0n;
+      if (have < cost) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: `not_enough_${resourceType}` });
+      }
+      
+      // Deduct resource
+      await client.query(
+        `UPDATE inventory SET amount = amount - $3 WHERE user_id = $1 AND resource_type = $2`,
+        [userId, resourceType, cost.toString()]
+      );
+    }
 
-    // ready_at setzen
-    const seconds = Number(qty) * cfg.seconds_per_unit; // qty begrenzt, ok für MVP
+    // Calculate total production time and output
+    const seconds = quantity * cfg.seconds_per_unit;
+    const totalOutput = BigInt(cfg.output_per_unit * quantity);
+    
     const readyAtRes = await client.query(
       `UPDATE buildings
        SET is_producing = true,
@@ -92,7 +140,7 @@ productionRouter.post('/start', authRequired, async (req, res) => {
            ready_at = now() + ($2 || ' seconds')::interval
        WHERE user_id = $1 AND building_type = $4
        RETURNING ready_at`,
-      [userId, String(seconds), qty.toString(), building_type]
+      [userId, String(seconds), totalOutput.toString(), building_type]
     );
 
     await client.query('COMMIT');
@@ -100,8 +148,7 @@ productionRouter.post('/start', authRequired, async (req, res) => {
     return res.json({
       ok: true,
       building_type,
-      quantity: qty.toString(),
-      cost: totalCost.toString(),
+      quantity,
       ready_at: readyAtRes.rows[0].ready_at
     });
   } catch (err) {
@@ -114,7 +161,7 @@ productionRouter.post('/start', authRequired, async (req, res) => {
 });
 
 const collectSchema = z.object({
-  building_type: z.enum(['well', 'lumberjack', 'sandgrube'])
+  building_type: z.enum(['kraftwerk', 'well', 'lumberjack', 'sandgrube'])
 });
 
 productionRouter.post('/collect', authRequired, async (req, res) => {

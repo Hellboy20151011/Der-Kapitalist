@@ -24,7 +24,7 @@ async function seedNewPlayer(client, userId) {
   await client.query(`INSERT INTO player_state(user_id, coins, last_tick_at) VALUES ($1, 100, now())`, [userId]);
 
   // Start-Inventar
-  const resources = ['water', 'wood', 'stone', 'sand'];
+  const resources = ['strom', 'water', 'wood', 'stone', 'sand', 'limestone', 'cement', 'concrete', 'stone_blocks', 'wood_planks'];
   for (const r of resources) {
     await client.query(
       `INSERT INTO inventory(user_id, resource_type, amount) VALUES ($1, $2, 0)
@@ -34,7 +34,8 @@ async function seedNewPlayer(client, userId) {
   }
 
   // Start-Gebäude (1 pro Typ)
-  const buildings = ['well', 'lumberjack', 'sandgrube'];
+  // Seed initial buildings: kraftwerk to produce electricity
+  const buildings = ['kraftwerk'];
   for (const b of buildings) {
     await client.query(
       `INSERT INTO buildings(user_id, building_type, level) VALUES ($1, $2, 1)
