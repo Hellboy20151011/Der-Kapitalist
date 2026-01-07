@@ -1,3 +1,41 @@
+// ============================================================================
+// PRODUCTION ROUTER - Active Production System
+// ============================================================================
+// FILE SIZE: 239 lines
+// 
+// MODULARITY ASSESSMENT:
+// This is the ACTIVE production system used by the frontend (Main.gd)
+// Implements production using buildings.is_producing, ready_at columns
+// 
+// STRUCTURE:
+// 1. Configuration (CONFIG object) - Production recipes (~45 lines)
+// 2. POST /start - Start production (~110 lines)
+// 3. POST /collect - Collect finished production (~80 lines)
+// 
+// STRENGTHS:
+// - Focused on single responsibility (production management)
+// - Clear separation between start and collect operations
+// - Good configuration-driven design
+// - Reasonable file size
+// 
+// MODULARITY CONCERNS:
+// 1. Large CONFIG object could be extracted to constants.js or config file
+// 2. Resource validation logic is repeated between start and collect
+// 3. Transaction handling could be extracted to service layer
+// 
+// SUGGESTED IMPROVEMENTS:
+// - Extract to productionService.js:
+//   - validateProductionCosts(userId, buildingType, quantity)
+//   - deductProductionCosts(client, userId, costs)
+//   - startProduction(client, userId, buildingType, quantity)
+//   - collectProduction(client, userId, buildingType)
+// - Move CONFIG to constants.js for consistency
+// 
+// NOTE: There is a DUPLICATE production system in economy.js (lines 250-504)
+// that uses production_queue table. See economy.js comments for details.
+// The duplicate system should be removed to avoid confusion.
+// ============================================================================
+
 import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
@@ -14,6 +52,11 @@ export const productionRouter = express.Router();
  * well: 1 water for 0.5 strom in 0.5s
  * lumberjack: 2 wood for 0.1 strom + 0.2 water in 5s
  * sandgrube: 1.2 sand for 0.3 strom + 0.1 water in 3.2s
+ * 
+ * MODULARITY NOTE: This configuration object could be moved to:
+ * - backend/src/config/productionConfig.js
+ * - backend/src/constants.js (with other game configs)
+ * This would centralize all game balance and make it easier to maintain
  */
 const CONFIG = {
   kraftwerk: { 
@@ -46,6 +89,22 @@ const startSchema = z.object({
   building_type: z.enum(['kraftwerk', 'well', 'lumberjack', 'sandgrube']),
   quantity: z.number().int().positive().max(1_000_000)
 });
+
+// ============================================================================
+// POST /start - Start Production
+// ============================================================================
+// MODULARITY: ~110 lines handling production initiation
+// Contains complex resource validation and deduction logic
+// 
+// POTENTIAL REFACTORING:
+// This endpoint could be split into helper functions:
+// - _validateBuildingAvailable(client, userId, buildingType)
+// - _deductProductionCosts(client, userId, costs)
+// - _calculateProductionTime(quantity, config)
+// - _startBuildingProduction(client, userId, buildingType, output, seconds)
+// 
+// This would improve readability and testability
+// ============================================================================
 
 productionRouter.post('/start', authRequired, async (req, res) => {
   const parsed = startSchema.safeParse(req.body);
@@ -163,6 +222,18 @@ productionRouter.post('/start', authRequired, async (req, res) => {
 const collectSchema = z.object({
   building_type: z.enum(['kraftwerk', 'well', 'lumberjack', 'sandgrube'])
 });
+
+// ============================================================================
+// POST /collect - Collect Finished Production
+// ============================================================================
+// MODULARITY: ~80 lines handling production completion
+// Validates timing and credits resources to inventory
+// 
+// GOOD PRACTICES:
+// - Clear validation of production state
+// - Atomic transaction handling
+// - Proper error messages for different failure cases
+// ============================================================================
 
 productionRouter.post('/collect', authRequired, async (req, res) => {
   const parsed = collectSchema.safeParse(req.body);

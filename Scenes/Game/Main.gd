@@ -1,7 +1,44 @@
 extends Control
 
+# ============================================================================
+# MAIN GAME SCENE CONTROLLER
+# ============================================================================
+# This file is the main game scene controller (662 lines)
+# MODULARITY CONCERN: This file is too large and handles too many responsibilities
+# 
+# Current Responsibilities (violates Single Responsibility Principle):
+# 1. UI State Management (header, dialogs, panels)
+# 2. Market System (listings, buying, selling)
+# 3. Production Management (production state, timers, polling)
+# 4. Building Management (building info, upgrades, construction)
+# 5. Inventory and Resources Display
+# 6. Authentication and User Session
+# 7. Status Messages and Loading States
+# 
+# SUGGESTED REFACTORING:
+# - Extract MarketPanel.gd (market logic ~100 lines)
+# - Extract ProductionManager.gd (production logic ~80 lines)
+# - Extract BuildingPanel.gd (building UI logic ~60 lines)
+# - Extract UIStateManager.gd (loading, status, buttons ~50 lines)
+# - Keep only high-level coordination in Main.gd (~200 lines)
+# 
+# This would improve:
+# - Testability (smaller, focused units)
+# - Maintainability (easier to find and fix issues)
+# - Reusability (components can be used elsewhere)
+# - Code organization (clear separation of concerns)
+# ============================================================================
+
 # Dev mode - set to true to show dev features (reset button)
 @export var DEV_MODE: bool = true
+
+# ============================================================================
+# CONFIGURATION CONSTANTS
+# ============================================================================
+# MODULARITY NOTE: These constants should be moved to a separate config file
+# Suggested: res://autoload/GameConfig.gd
+# This would centralize all game constants and make them easier to maintain
+# ============================================================================
 
 # Production costs (must match backend CONFIG)
 const PRODUCTION_COSTS = {
@@ -15,6 +52,23 @@ const STATUS_MESSAGE_TIMEOUT = 5.0
 const RESOURCE_ICONS = {"water": "💧", "wood": "🪓", "stone": "🪨", "sand": "🏖️"}
 const RESOURCE_NAMES = {"water": "Wasser", "wood": "Holz", "stone": "Stein", "sand": "Sand"}
 const RESOURCE_TYPES = ["water", "wood", "stone", "sand"]
+
+# ============================================================================
+# UI NODE REFERENCES
+# ============================================================================
+# MODULARITY NOTE: 50+ @onready references indicates tight coupling to scene tree
+# This makes the code fragile and hard to refactor
+# 
+# SUGGESTED IMPROVEMENT:
+# - Group related UI elements into custom Control nodes (e.g., MarketPanel scene)
+# - Expose only high-level signals instead of direct node references
+# - Use dependency injection for services (Api, GameState)
+# 
+# Example refactoring:
+#   @onready var market_panel: MarketPanel = $VBoxMain/GameArea/MarketPanel
+#   market_panel.listing_purchased.connect(_on_market_purchase)
+# Instead of managing internal market panel controls here
+# ============================================================================
 
 # New UI references
 @onready var company_label: Label = $VBoxMain/HeaderBar/HeaderContent/HBox/LeftInfo/CompanyLabel
@@ -91,6 +145,14 @@ const RESOURCE_TYPES = ["water", "wood", "stone", "sand"]
 @onready var sell_wood_btn: Button  = $LegacyUI/RootPanel/Margin/VBox/SellButtons/SellWood10
 @onready var sell_stone_btn: Button = $LegacyUI/RootPanel/Margin/VBox/SellButtons/SellStone10
 
+# ============================================================================
+# STATE VARIABLES
+# ============================================================================
+# MODULARITY NOTE: Production state tracking is duplicated between this file
+# and the backend. Consider creating a ProductionStateManager class to handle
+# this complexity in one place.
+# ============================================================================
+
 var poll_timer: Timer
 var has_well := false
 var has_lumberjack := false
@@ -105,6 +167,17 @@ var lumber_producing := false
 var lumber_ready_at = null
 var sandgrube_producing := false
 var sandgrube_ready_at = null
+
+# ============================================================================
+# INITIALIZATION
+# ============================================================================
+# MODULARITY NOTE: _ready() is 70 lines - too long for a single function
+# Should be broken into smaller initialization methods:
+# - _setup_ui_connections()
+# - _setup_market_panel()
+# - _setup_building_controls()
+# - _setup_production_polling()
+# ============================================================================
 
 func _ready() -> void:
 	# Check if logged in
@@ -176,6 +249,13 @@ func _ready() -> void:
 	# Direkt nach Start syncen
 	await _sync_state()
 
+# ============================================================================
+# UI HANDLER METHODS (Navigation & Panels)
+# ============================================================================
+# MODULARITY NOTE: These methods are simple but scattered throughout the file
+# Consider grouping related functionality or extracting to a NavigationManager
+# ============================================================================
+
 # New UI handlers
 func _show_stats() -> void:
 	_set_status("Statistiken anzeigen")
@@ -201,6 +281,27 @@ func _show_market() -> void:
 
 func _close_market() -> void:
 	market_panel.visible = false
+
+# ============================================================================
+# MARKET SYSTEM IMPLEMENTATION
+# ============================================================================
+# MODULARITY CONCERN: ~150 lines of market logic embedded in Main scene
+# This should be extracted to a dedicated MarketPanel.gd scene/script
+# 
+# Benefits of extraction:
+# - Reusable market panel component
+# - Easier to test market functionality in isolation
+# - Clearer separation between game logic and market logic
+# - Reduced complexity in Main.gd
+# 
+# Suggested structure:
+#   res://Scenes/UI/MarketPanel.gd
+#   - Market listing display logic
+#   - Buy/sell transaction handling
+#   - Filter and refresh logic
+#   Signal: listing_purchased(listing_id)
+#   Signal: listing_created(resource_type, quantity, price)
+# ============================================================================
 
 func _refresh_market_listings() -> void:
 	if is_loading:
@@ -343,6 +444,13 @@ func _create_market_listing() -> void:
 	_set_status("✓ Angebot erstellt!", true)
 	await _sync_state()
 
+# ============================================================================
+# UX HELPER FUNCTIONS
+# ============================================================================
+# MODULARITY NOTE: These utility functions are well-contained and could be
+# extracted to a UIHelper class for reuse across scenes
+# ============================================================================
+
 # UX Improvement functions
 func _show_loading(show: bool) -> void:
 	is_loading = show
@@ -394,6 +502,13 @@ func _dev_reset_account() -> void:
 	_set_status("✓ Account zurückgesetzt!", true)
 	await _sync_state()
 
+# ============================================================================
+# BUILDING MANAGEMENT
+# ============================================================================
+# MODULARITY NOTE: Building dialog and icon management (~50 lines)
+# Could be extracted to BuildingInfoPanel component
+# ============================================================================
+
 func _on_building_selected(index: int) -> void:
 	_set_status("Gebäude ausgewählt: " + building_selector.get_item_text(index))
 
@@ -431,6 +546,23 @@ func _show_building_dialog(title: String, desc: String, resource_type: String) -
 	dialog_info.text = "Dein Gebäude beschäftigt 4 Arbeiter und produziert aktuell Waren in der Qualitätsstufe Q0"
 	dialog_action.text = "Klicke auf Produzieren um die Produktion zu starten"
 	building_info_dialog.visible = true
+
+# ============================================================================
+# STATE SYNCHRONIZATION
+# ============================================================================
+# MODULARITY NOTE: _sync_state() is a critical 75-line method that handles:
+# - Server communication
+# - Data parsing and type conversion
+# - UI updates across multiple panels
+# - Building state management
+# - Production state tracking
+# 
+# This method violates SRP and should be refactored into:
+# - _fetch_server_state() -> Dictionary
+# - _update_ui_from_state(state: Dictionary) -> void
+# - _update_building_states(buildings: Array) -> void
+# - _update_production_timers(buildings: Array) -> void
+# ============================================================================
 
 func _sync_state() -> void:
 	if GameState.token == "":
@@ -509,6 +641,10 @@ func _sync_state() -> void:
 
 	_set_status("Sync ok (%s)" % str(s.get("server_time", "")))
 
+# ============================================================================
+# ECONOMY ACTIONS (Build, Upgrade, Sell)
+# ============================================================================
+
 func _upgrade(building_type: String) -> void:
 	var res := await Api.upgrade_building(building_type)
 	if not res.ok:
@@ -526,6 +662,10 @@ func _sell(resource_type: String, qty: int) -> void:
 func _logout() -> void:
 	GameState.reset()
 	get_tree().change_scene_to_file("res://Scenes/Auth/Login.tscn")
+
+# ============================================================================
+# ERROR HANDLING & UTILITIES
+# ============================================================================
 
 func _error_string(res: Dictionary) -> String:
 	# Check for new error details field (network errors, timeouts)
@@ -545,6 +685,20 @@ func _error_string(res: Dictionary) -> String:
 		return "HTTP %s" % str(code)
 	return "unbekannt"
 
+# ============================================================================
+# UI UPDATE HELPERS
+# ============================================================================
+# MODULARITY NOTE: These helper methods manage complex UI state across
+# multiple sliders, buttons, and labels. The logic is tightly coupled to
+# the production system state.
+# 
+# Consider creating a ProductionUIController to encapsulate:
+# - Slider state management
+# - Button enable/disable logic
+# - Timer display updates
+# - Cost calculations and validation
+# ============================================================================
+
 func _update_slider_max(slider: HSlider, building_type: String, has_building: bool, is_producing: bool) -> void:
 	## Helper function to update slider max value based on available coins and building state
 	if not has_building:
@@ -555,6 +709,22 @@ func _update_slider_max(slider: HSlider, building_type: String, has_building: bo
 	slider.max_value = float(max_qty)
 	if not is_producing:
 		slider.value = min(slider.value, float(max_qty))
+
+# ============================================================================
+# BUILDING UI STATE MANAGEMENT
+# ============================================================================
+# MODULARITY CONCERN: _update_building_ui() is 75 lines of repetitive code
+# with very similar logic for well/lumberjack/sandgrube
+# 
+# This is a prime candidate for refactoring using:
+# - Data-driven approach with building config dictionary
+# - Helper methods to reduce duplication
+# - Observer pattern for production state changes
+# 
+# Example refactored approach:
+#   func _update_building_production_ui(building_type: String, config: Dictionary):
+#     # Generic logic for any building type
+# ============================================================================
 
 func _update_building_ui() -> void:
 	# Enable/disable build buttons based on ownership
@@ -631,6 +801,10 @@ func _update_building_ui() -> void:
 		stone_produce_btn.text = "Produzieren" if current_coins >= stone_cost else "Nicht genug Coins"
 		stone_produce_btn.disabled = not has_sandgrube or current_coins < stone_cost
 
+# ============================================================================
+# PRODUCTION ACTIONS
+# ============================================================================
+
 func _build(building_type: String) -> void:
 	var res := await Api.build_building(building_type)
 	if not res.ok:
@@ -652,6 +826,13 @@ func _produce(building_type: String, quantity: int) -> void:
 		return
 	_set_status("Produktion gestartet!")
 	await _sync_state()
+
+# ============================================================================
+# PRODUCTION POLLING
+# ============================================================================
+# MODULARITY NOTE: Polling is a simple timer-based system
+# Could be improved with event-based updates or WebSocket connection
+# ============================================================================
 
 func _poll_production() -> void:
 	if GameState.token == "":

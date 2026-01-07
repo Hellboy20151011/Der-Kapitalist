@@ -1,3 +1,37 @@
+// ============================================================================
+// ECONOMY ROUTER - Building Construction, Upgrades, Sales & Production
+// ============================================================================
+// FILE SIZE: 504 lines
+// 
+// MODULARITY ASSESSMENT:
+// This file handles multiple major subsystems:
+// 1. Resource selling (/sell) - ~50 lines
+// 2. Building upgrades (/buildings/upgrade) - ~60 lines
+// 3. Building construction (/buildings/build) - ~100 lines
+// 4. Production system (ALTERNATIVE/UNUSED) - ~250 lines
+// 
+// CRITICAL ISSUE: DUPLICATE PRODUCTION SYSTEM
+// Lines 250-504 contain a complete production implementation using 
+// production_queue table that is NOT currently used by the frontend.
+// The frontend uses /production/* endpoints instead (production.js).
+// See KNOWN_ISSUES.md for detailed explanation.
+// 
+// RECOMMENDED REFACTORING:
+// 1. Split into separate routers:
+//    - economyRouter.js (sell, upgrade, build) ~210 lines
+//    - productionQueueRouter.js (alternative system) ~250 lines OR DELETE
+// 2. Extract shared logic to services:
+//    - buildingService.js (building operations, cost calculations)
+//    - inventoryService.js (resource checks, updates)
+//    - transactionService.js (atomic coin/resource transfers)
+// 
+// This would:
+// - Eliminate the confusion about which production system is active
+// - Make each file focused on a single responsibility
+// - Improve testability and maintainability
+// - Reduce file size to < 250 lines each
+// ============================================================================
+
 import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
@@ -5,6 +39,13 @@ import { authRequired } from '../middleware/authRequired.js';
 import { RESOURCE_TYPES, BUILDING_TYPES } from '../constants.js';
 
 export const economyRouter = express.Router();
+
+// ============================================================================
+// RESOURCE SELLING ENDPOINT
+// ============================================================================
+// MODULARITY: This endpoint is well-contained (~50 lines)
+// Could be extracted to sellService.js if economy router gets split
+// ============================================================================
 
 const SELL_PRICES = { 
   strom: 1.1,
@@ -75,6 +116,14 @@ economyRouter.post('/sell', authRequired, async (req, res) => {
   }
 });
 
+// ============================================================================
+// BUILDING UPGRADE SYSTEM
+// ============================================================================
+// MODULARITY: Upgrade logic is straightforward but tightly coupled to economy
+// Consider: buildingService.js with upgradeBuilding(userId, buildingType)
+// This would encapsulate cost calculation and make it reusable
+// ============================================================================
+
 const upgradeSchema = z.object({
   building_type: z.enum(BUILDING_TYPES)
 });
@@ -144,6 +193,22 @@ economyRouter.post('/buildings/upgrade', authRequired, async (req, res) => {
     client.release();
   }
 });
+
+// ============================================================================
+// BUILDING CONSTRUCTION SYSTEM
+// ============================================================================
+// MODULARITY NOTE: This is a complex endpoint (~100 lines) with:
+// - Dynamic resource cost validation
+// - Multi-resource transactions
+// - Cost configuration management
+// 
+// SUGGESTED REFACTORING:
+// Extract to buildingService.js:
+//   - validateBuildingCosts(userId, buildingType, costs)
+//   - deductBuildingCosts(client, userId, costs)
+//   - constructBuilding(userId, buildingType)
+// This would make the endpoint handler much simpler and more testable
+// ============================================================================
 
 // Building costs for construction (not upgrades)
 const BUILD_COSTS = {
@@ -248,20 +313,48 @@ economyRouter.post('/buildings/build', authRequired, async (req, res) => {
   }
 });
 // ============================================================================
-// PRODUCTION SYSTEM (Alternative Implementation - Currently Not Used)
+// ⚠️ WARNING: DUPLICATE PRODUCTION SYSTEM - NOT ACTIVELY USED ⚠️
 // ============================================================================
-// NOTE: This is an alternative production system using production_queue table.
-// The frontend currently uses /production/* endpoints (production.js) instead.
-// This implementation uses production_queue for multi-job queuing.
-// See KNOWN_ISSUES.md for details on the production system duplication.
+// CRITICAL MODULARITY ISSUE:
 // 
-// TODO: Decide whether to:
-// 1. Remove this duplicate production system and consolidate to production.js
-// 2. Migrate frontend to use this queue-based system instead
-// 3. Keep both and clearly document when each should be used
+// The code below (lines 250-504) implements a COMPLETE production system using
+// the production_queue table. However, this system is NOT used by the frontend.
 // 
-// The duplicate code creates maintenance burden and potential bugs if only one
-// system is updated while the other remains unchanged.
+// CURRENT SITUATION:
+// - Frontend uses: /production/* endpoints (production.js)
+//   - Uses buildings.is_producing, ready_at, producing_qty columns
+//   - Simpler, one-production-per-building model
+// 
+// - This code: /economy/production/* endpoints (economy.js)  
+//   - Uses production_queue table for multiple jobs
+//   - More complex queue-based system
+//   - NOT CONNECTED TO FRONTEND
+// 
+// PROBLEMS:
+// 1. Code duplication and maintenance burden
+// 2. Confusion about which system is "correct"
+// 3. Unused database table (production_queue)
+// 4. Risk of divergent behavior if one is updated
+// 
+// RESOLUTION OPTIONS:
+// A) DELETE this section (lines 250-504) and production_queue table
+//    - Simplest solution if queue functionality not needed
+//    - Remove confusion and reduce maintenance
+// 
+// B) MIGRATE frontend to use this queue-based system
+//    - If multiple production jobs per building are desired
+//    - Requires frontend changes and testing
+//    - Delete production.js endpoints
+// 
+// C) KEEP BOTH but document clearly
+//    - Mark this as "future feature" or "experimental"
+//    - Add clear deprecation warnings
+//    - Not recommended due to maintenance burden
+// 
+// RECOMMENDATION: Choose option A or B within next sprint
+// Current state violates DRY principle and creates technical debt
+// 
+// See: docs/KNOWN_ISSUES.md for detailed analysis
 // ============================================================================
 // ============================================================================
 
