@@ -48,6 +48,7 @@ extends Node
 # Base URL can be configured in project settings or overridden via environment
 # Default to localhost for development
 const DEFAULT_BASE_URL := "http://localhost:3000"
+const DEFAULT_WS_URL := "ws://localhost:3000"
 
 # Legacy compatibility - kept for gradual migration
 var token: String = "":
@@ -57,6 +58,43 @@ var token: String = "":
 		GameState.token = value
 
 var base_url := _get_base_url()
+
+func _ready() -> void:
+	## Initialize project settings on first run
+	_ensure_project_settings()
+
+func _ensure_project_settings() -> void:
+	## Create project settings if they don't exist
+	# API Base URL setting
+	if not ProjectSettings.has_setting("application/config/api_base_url"):
+		ProjectSettings.set_setting("application/config/api_base_url", DEFAULT_BASE_URL)
+		ProjectSettings.set_initial_value("application/config/api_base_url", DEFAULT_BASE_URL)
+		# Add property info for the editor
+		ProjectSettings.add_property_info({
+			"name": "application/config/api_base_url",
+			"type": TYPE_STRING,
+			"hint": PROPERTY_HINT_NONE,
+			"hint_string": ""
+		})
+		print("[Api] Created project setting: application/config/api_base_url = ", DEFAULT_BASE_URL)
+	
+	# WebSocket Base URL setting
+	if not ProjectSettings.has_setting("application/config/ws_base_url"):
+		ProjectSettings.set_setting("application/config/ws_base_url", DEFAULT_WS_URL)
+		ProjectSettings.set_initial_value("application/config/ws_base_url", DEFAULT_WS_URL)
+		# Add property info for the editor
+		ProjectSettings.add_property_info({
+			"name": "application/config/ws_base_url",
+			"type": TYPE_STRING,
+			"hint": PROPERTY_HINT_NONE,
+			"hint_string": ""
+		})
+		print("[Api] Created project setting: application/config/ws_base_url = ", DEFAULT_WS_URL)
+	
+	# Save the project settings to disk
+	var save_err = ProjectSettings.save()
+	if save_err != OK:
+		print("[Api] Warning: Could not save project settings: ", save_err)
 
 func _get_base_url() -> String:
 	# Check for project setting first

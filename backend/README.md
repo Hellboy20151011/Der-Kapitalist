@@ -48,6 +48,25 @@ npm start
 
 The server will start on `http://localhost:3000` by default.
 
+## Railway.app Deployment
+
+Wenn das Backend auf Railway.app läuft, müssen folgende Environment Variables gesetzt werden:
+
+```bash
+PORT=8080  # Railway nutzt Port 8080
+ALLOWED_ORIGINS=http://localhost:*,https://ihre-frontend-domain.netlify.app
+NODE_ENV=production
+DATABASE_URL=<your-railway-postgres-url>
+JWT_SECRET=<your-secure-secret-key>
+JWT_EXPIRES_IN=7d
+```
+
+**Wichtige Hinweise:**
+- Railway.app stellt automatisch `DATABASE_URL` bereit wenn PostgreSQL hinzugefügt wird
+- `ALLOWED_ORIGINS` sollte alle Frontend-Domains enthalten (komma-separiert)
+- `JWT_SECRET` muss mindestens 32 Zeichen lang sein für Sicherheit
+- Der WebSocket-Server läuft automatisch auf demselben Port wie die HTTP-API
+
 ## API Endpoints
 
 See [../API.md](../API.md) for complete API documentation.

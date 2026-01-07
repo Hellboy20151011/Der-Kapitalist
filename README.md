@@ -73,6 +73,30 @@ Siehe [backend/README.md](backend/README.md) für Backend-Setup-Anweisungen.
    - Füge `ws_base_url` Setting hinzu für WebSocket URL (z.B. `ws://localhost:3000`)
 4. Drücke F5 zum Starten
 
+### Railway.app Production Setup
+
+**Backend ist bereits deployed auf Railway.app!**
+
+Um das Spiel mit dem Production Backend zu verbinden:
+
+1. Öffne das Projekt in Godot
+2. Gehe zu **Project → Project Settings**
+3. Suche nach `application/config/api_base_url`
+4. Ändere den Wert auf: `https://der-kapitalist-production.up.railway.app`
+5. Suche nach `application/config/ws_base_url`
+6. Ändere den Wert auf: `wss://der-kapitalist-production.up.railway.app`
+7. Speichern und Spiel neu starten
+
+**Wichtig:** Die Settings werden automatisch beim ersten Start mit localhost-Defaults erstellt.
+
+**Für lokale Entwicklung:**
+- API URL: `http://localhost:3000`
+- WebSocket URL: `ws://localhost:3000`
+
+**Für Railway.app Production:**
+- API URL: `https://der-kapitalist-production.up.railway.app`
+- WebSocket URL: `wss://der-kapitalist-production.up.railway.app`
+
 ### WebSocket Setup
 
 Das Spiel nutzt WebSockets für Echtzeit-Updates wie:
