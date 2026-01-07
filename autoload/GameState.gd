@@ -24,6 +24,18 @@ var buildings: Array = []
 # Server time
 var server_time: String = ""
 
+# Signals for state changes
+signal coins_changed(new_amount: int)
+signal inventory_changed(resource_type: String, new_amount: int)
+signal buildings_changed()
+
+func _ready() -> void:
+	# Connect to WebSocket signals when WebSocketClient is available
+	if has_node("/root/WebSocketClient"):
+		var ws_client = get_node("/root/WebSocketClient")
+		ws_client.state_updated.connect(_on_websocket_state_updated)
+		ws_client.production_complete.connect(_on_websocket_production_complete)
+
 ## Reset all state to defaults (e.g., on logout)
 func reset() -> void:
 	token = ""
@@ -42,17 +54,23 @@ func reset() -> void:
 func update_from_server(data: Dictionary) -> void:
 	## Update state from server response
 	if data.has("coins"):
+		var old_coins = coins
 		coins = int(str(data.get("coins", "0")))
+		if old_coins != coins:
+			coins_changed.emit(coins)
 	
 	if data.has("inventory"):
 		var inv = data.get("inventory", {})
-		inventory["water"] = int(str(inv.get("water", "0")))
-		inventory["wood"] = int(str(inv.get("wood", "0")))
-		inventory["stone"] = int(str(inv.get("stone", "0")))
-		inventory["sand"] = int(str(inv.get("sand", "0")))
+		for resource_type in ["water", "wood", "stone", "sand"]:
+			var old_amount = inventory.get(resource_type, 0)
+			var new_amount = int(str(inv.get(resource_type, "0")))
+			inventory[resource_type] = new_amount
+			if old_amount != new_amount:
+				inventory_changed.emit(resource_type, new_amount)
 	
 	if data.has("buildings"):
 		buildings = data.get("buildings", [])
+		buildings_changed.emit()
 	
 	if data.has("server_time"):
 		server_time = str(data.get("server_time", ""))
@@ -70,3 +88,24 @@ func get_building(building_type: String) -> Dictionary:
 		if building.get("type", "") == building_type:
 			return building
 	return {}
+
+func _on_websocket_state_updated(state: Dictionary) -> void:
+	## Handle state updates from WebSocket
+	print("[GameState] Received state update via WebSocket: ", state.get("type", ""))
+	
+	# Refresh state from server when notified
+	# We could update local state directly, but safer to fetch from server
+	# to ensure consistency
+	var result = await Api.get_state()
+	if result.ok and result.data:
+		update_from_server(result.data)
+
+func _on_websocket_production_complete(job: Dictionary) -> void:
+	## Handle production completion from WebSocket
+	print("[GameState] Production complete: ", job)
+	
+	# Refresh state to get updated inventory
+	var result = await Api.get_state()
+	if result.ok and result.data:
+		update_from_server(result.data)
+

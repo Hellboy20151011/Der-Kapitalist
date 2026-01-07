@@ -40,6 +40,7 @@ import express from 'express';
 import { z } from 'zod';
 import { pool } from '../db.js';
 import { authRequired } from '../middleware/authRequired.js';
+import { emitToUser } from '../utils/socketHelper.js';
 
 export const productionRouter = express.Router();
 
@@ -204,6 +205,15 @@ productionRouter.post('/start', authRequired, async (req, res) => {
 
     await client.query('COMMIT');
 
+    // Emit WebSocket event for production started
+    emitToUser(userId, 'production:started', {
+      building_type,
+      quantity,
+      ready_at: readyAtRes.rows[0].ready_at,
+      resource: cfg.resource,
+      output: totalOutput.toString()
+    });
+
     return res.json({
       ok: true,
       building_type,
@@ -299,6 +309,14 @@ productionRouter.post('/collect', authRequired, async (req, res) => {
     );
 
     await client.query('COMMIT');
+    
+    // Emit WebSocket event for production complete
+    emitToUser(userId, 'production:complete', {
+      building_type,
+      quantity: qty.toString(),
+      resource: cfg.resource
+    });
+    
     return res.json({ ok: true, building_type, quantity: qty.toString(), resource: cfg.resource });
   } catch (err) {
     await client.query('ROLLBACK');

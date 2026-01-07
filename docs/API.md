@@ -363,3 +363,248 @@ All endpoints may return these standard error responses:
 - Unix timestamps are provided for time-sensitive operations (production completion)
 - The server is the single source of truth for all game state
 - Client should poll `/state` endpoint periodically to check production status
+
+## WebSocket Events
+
+### Connection
+
+WebSocket server is available at the same URL as the HTTP API, using the WebSocket protocol:
+
+**Development:**
+```
+ws://localhost:3000
+```
+
+**Production:**
+```
+wss://your-domain.com
+```
+
+### Authentication
+
+WebSocket connections require JWT authentication. The token should be sent in the connection handshake:
+
+```javascript
+// In the initial connection message
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+In Godot, authentication is handled automatically by the WebSocketClient autoload.
+
+### Client → Server Events
+
+Events that the client can send to the server:
+
+#### subscribe:market
+Subscribe to market updates (new listings, sales).
+
+**Payload:**
+```json
+{}
+```
+
+**Server Response:**
+```json
+{
+  "event": "subscribed",
+  "data": {
+    "channel": "market"
+  }
+}
+```
+
+#### subscribe:production
+Subscribe to production updates (job completion).
+
+**Payload:**
+```json
+{}
+```
+
+**Server Response:**
+```json
+{
+  "event": "subscribed",
+  "data": {
+    "channel": "production"
+  }
+}
+```
+
+#### ping
+Keep-alive ping to maintain connection.
+
+**Payload:**
+```json
+{}
+```
+
+**Server Response:**
+```json
+{
+  "event": "pong",
+  "data": {
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+### Server → Client Events
+
+Events that the server emits to clients:
+
+#### market:new-listing
+Emitted when a new market listing is created (broadcast to all subscribed users).
+
+**Payload:**
+```json
+{
+  "id": 123,
+  "resource_type": "wood",
+  "quantity": "100",
+  "price_per_unit": "5",
+  "fee_percent": 10,
+  "expires_at": "2024-01-16T10:30:00Z"
+}
+```
+
+#### market:listing-sold
+Emitted to the seller when their listing is bought.
+
+**Payload:**
+```json
+{
+  "listing_id": 123,
+  "resource_type": "wood",
+  "quantity": "100",
+  "total": "450",
+  "fee": "50"
+}
+```
+
+#### production:started
+Emitted to user when production job starts.
+
+**Payload:**
+```json
+{
+  "building_type": "lumberjack",
+  "quantity": 10,
+  "ready_at": "2024-01-15T10:35:00Z",
+  "resource": "wood",
+  "output": "200"
+}
+```
+
+#### production:complete
+Emitted to user when production job finishes.
+
+**Payload:**
+```json
+{
+  "building_type": "lumberjack",
+  "quantity": "200",
+  "resource": "wood"
+}
+```
+
+#### state:update
+Emitted when coins, inventory, or buildings change.
+
+**Payload for resource sold:**
+```json
+{
+  "type": "resource_sold",
+  "resource_type": "wood",
+  "quantity": "10",
+  "coins_gained": "13"
+}
+```
+
+**Payload for building built:**
+```json
+{
+  "type": "building_built",
+  "building_type": "well",
+  "costs": {
+    "coins": "20"
+  }
+}
+```
+
+**Payload for building upgraded:**
+```json
+{
+  "type": "building_upgraded",
+  "building_type": "well",
+  "new_level": 2,
+  "cost": "160"
+}
+```
+
+**Payload for market purchase:**
+```json
+{
+  "type": "market_purchase",
+  "coins_spent": "500"
+}
+```
+
+### Connection Management
+
+- **Reconnection**: Clients should implement exponential backoff for reconnection attempts
+- **Heartbeat**: Server sends ping every 25 seconds, times out after 60 seconds of inactivity
+- **Token Expiry**: If JWT token expires, reconnect with new token
+- **Graceful Degradation**: If WebSocket fails, fall back to polling `/state` endpoint
+
+### Usage Examples
+
+**Godot (using WebSocketClient autoload):**
+```gdscript
+func _ready():
+    # Connect to server
+    WebSocketClient.connect_to_server()
+    
+    # Subscribe to events
+    WebSocketClient.market_new_listing.connect(_on_new_listing)
+    WebSocketClient.production_complete.connect(_on_production_done)
+    
+    # Subscribe to channels when connected
+    WebSocketClient.connected_to_server.connect(func():
+        WebSocketClient.subscribe_to_market()
+        WebSocketClient.subscribe_to_production()
+    )
+
+func _on_new_listing(listing: Dictionary):
+    print("New listing: ", listing.resource_type)
+    # Refresh market UI
+
+func _on_production_done(job: Dictionary):
+    print("Production complete: ", job.resource)
+    # Update inventory UI
+```
+
+### Event Flow Examples
+
+**Market Listing Creation:**
+1. User A creates listing via `POST /market/listings`
+2. Server saves listing to database
+3. Server emits `market:new-listing` to all users subscribed to market channel
+4. All clients receive event and update their market UI
+
+**Production Completion:**
+1. User starts production via `POST /production/start`
+2. Server emits `production:started` to user
+3. Production timer completes on server
+4. User collects via `POST /production/collect`
+5. Server emits `production:complete` to user
+6. Client updates inventory UI
+
+**Market Purchase:**
+1. User B buys listing via `POST /market/listings/:id/buy`
+2. Server processes transaction
+3. Server emits `market:listing-sold` to seller (User A)
+4. Server emits `state:update` to buyer (User B)
+5. Both clients update their UI accordingly
