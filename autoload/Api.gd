@@ -96,9 +96,9 @@ func _create_project_setting(setting_name: String, default_value: String) -> voi
 		# Determine hint string based on setting name
 		var hint_text := ""
 		if setting_name == SETTING_API_BASE_URL:
-			hint_text = "Base URL for API requests (e.g., http://localhost:3000 or https://your-app.up.railway.app)"
+			hint_text = "Base URL for API requests (e.g., http://localhost:3000 or https://your-domain.com)"
 		elif setting_name == SETTING_WS_BASE_URL:
-			hint_text = "Base URL for WebSocket connection (e.g., ws://localhost:3000 or wss://your-app.up.railway.app)"
+			hint_text = "Base URL for WebSocket connection (e.g., ws://localhost:3000 or wss://your-domain.com)"
 		
 		# Add property info for the editor
 		ProjectSettings.add_property_info({
